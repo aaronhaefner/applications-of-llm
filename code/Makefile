@@ -5,12 +5,12 @@ all: requirements.txt
 # Variables
 VENV_DIR = venv
 REQUIREMENTS = requirements.txt
-PACKAGES = torch transformers datasets ipython jupyterlab matplotlib
+PACKAGES = torch torchvision torchaudio transformers datasets ipython jupyterlab matplotlib
 PYTHON = python3.12
 
 # Recipes
 .PHONY: ipy setup
-# Launch interactve python in the virtual environment
+# Launch interactive Python in the virtual environment
 ipy:
 	source $(VENV_DIR)/bin/activate && IPython
 
@@ -18,10 +18,12 @@ ipy:
 setup:
 	$(PYTHON) -m venv $(VENV_DIR)
 	$(VENV_DIR)/bin/pip install --upgrade pip
-
-$(REQUIREMENTS):
 	$(VENV_DIR)/bin/pip install $(PACKAGES)
 	$(VENV_DIR)/bin/pip freeze > $(REQUIREMENTS)
+
+# Ensure requirements.txt is created
+$(REQUIREMENTS):
+	$(MAKE) setup
 
 # Clean the virtual environment and requirements file
 .PHONY: clean
