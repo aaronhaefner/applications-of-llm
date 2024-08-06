@@ -1,2 +1,3 @@
 .DS_Store
 code/venv/*
+code/models/__pycache__/*
