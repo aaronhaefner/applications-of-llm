@@ -1,3 +1,4 @@
 .DS_Store
 code/venv/*
 code/models/__pycache__/*
+code/utils/__pycache__/*
