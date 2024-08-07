@@ -5,8 +5,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 
 # Set device to MPS - Metal Performance Shaders for Apple GPUs
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-
 def create_pipeline(task: str, model_name: str, device: torch.device) -> pipeline:
     """
     Create a Hugging Face pipeline and move to the desired device.
@@ -23,7 +21,7 @@ def create_pipeline(task: str, model_name: str, device: torch.device) -> pipelin
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=HUGGINGFACE_TOKEN)
     model = AutoModelForCausalLM.from_pretrained(model_name, token=HUGGINGFACE_TOKEN).to(device)
 
-    return pipeline(task, model=model, tokenizer=tokenizer, device=device)
+    return pipeline(task, model=model, tokenizer=tokenizer, device=device, clean_up_tokenization_spaces=False)
 
 def generate_text(pipe: pipeline, prompt: str) -> str:
     """
@@ -39,12 +37,3 @@ def generate_text(pipe: pipeline, prompt: str) -> str:
     result = pipe(prompt)
     return result[0]['generated_text']
 
-if __name__ == "__main__":
-    # Source: https://huggingface.co/EleutherAI/gpt-neo-1.3B
-    model_name = "EleutherAI/gpt-neo-1.3B"  # Medium-sized model for text generation
-    task = "text-generation"
-
-    pipe = create_pipeline(task, model_name, device)
-    
-    prompt = "The future of AI is"
-    print(generate_text(pipe, prompt))
