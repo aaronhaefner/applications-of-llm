@@ -1,2 +1,2 @@
 # classifier-augmented-llm
-Augment pre-trained LLM with Classifier Output in PyTorch
+Augment pre-trained LLMs in PyTorch to produce queryable healthcare data and information
