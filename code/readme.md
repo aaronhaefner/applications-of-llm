@@ -4,7 +4,4 @@
 - `requirements.txt`: python package dependencies
 
 `utils/`
-- `utils.py`: utility functions
-
-`models/`:
-- `torch_llm.py`: torch implementation of a pre-trained language model
+- `utils.py`: utility functions to load pre-trained models
