@@ -21,7 +21,7 @@ def create_pipeline(task: str, model_name: str, device: torch.device) -> pipelin
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=HUGGINGFACE_TOKEN)
     model = AutoModelForCausalLM.from_pretrained(model_name, token=HUGGINGFACE_TOKEN).to(device)
 
-    return pipeline(task, model=model, tokenizer=tokenizer, device=device, clean_up_tokenization_spaces=False)
+    return pipeline(task, model=model, tokenizer=tokenizer, device=device, clean_up_tokenization_spaces=True)
 
 def generate_text(pipe: pipeline, prompt: str) -> str:
     """
