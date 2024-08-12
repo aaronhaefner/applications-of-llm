@@ -37,7 +37,7 @@ To replicate the training process or use the model, follow these steps:
 
 ## Model on Hugging Face
 
-You can find the trained model on Hugging Face [here](https://huggingface.co/aaronhaefner/sql-trained-llm).
+You can find the trained model on Hugging Face [here](https://huggingface.co/aaronhaefner/txt2sql_v1).
 
 ## Notes
 
