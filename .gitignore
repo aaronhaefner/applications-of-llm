@@ -1,5 +1,9 @@
 .DS_Store
 .env
 code/venv/*
+code/general_model
+code/healthcare_model
+code/output
+*.log
 code/__pycache__/*
 code/utils/__pycache__/*

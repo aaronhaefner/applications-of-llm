@@ -1,22 +1,24 @@
 # Setup
+import os
 import sys
 import logging
+import json
 from utils.utils import (
     set_device, load_tokenizer_model, make_model_contiguous,
     load_train_test, preprocess_function, set_training_args,
     set_trainer)
 from utils.globals import (DATASET, MODEL_NAME, HUB_MODEL_ID, HFTOKEN)
 from transformers import T5Tokenizer, T5ForConditionalGeneration, Trainer, TrainingArguments
+from datasets import Dataset
 
-
-def train():
+def first_stage_training():
     device = set_device()
     tokenizer, model = load_tokenizer_model(device)
 
     logging.info(f"Model loaded on {device}")
     make_model_contiguous(model)
 
-    # Load dataset, split, tokenize
+    # Load the dataset
     train_dataset, test_dataset = load_train_test(DATASET)
 
     tokenized_train_dataset = train_dataset.map(
@@ -31,11 +33,11 @@ def train():
         remove_columns=test_dataset.column_names
     )
 
-    logging.info("Dataset loaded and tokenized")
+    logging.info("General dataset loaded and tokenized")
 
     # Trainer
     training_args = set_training_args()    
-    logging.info("Starting training")
+    logging.info("Starting first stage training")
 
     trainer = set_trainer(
         model,
@@ -46,72 +48,79 @@ def train():
     )
 
     trainer.train()
-    # trainer.push_to_hub()
+    
+    # Save the model and tokenizer
+    model.save_pretrained("general_model")
+    tokenizer.save_pretrained("general_model")
 
-    logging.info("Training completed and model pushed to Hugging Face Hub")
+    logging.info("First stage training completed and model saved")
 
 
-def eval():
-    from datasets import load_dataset
+def second_stage_training():
     device = set_device()
 
-    # Load the tokenizer and model from Hugging Face Hub
-    tokenizer = T5Tokenizer.from_pretrained(HUB_MODEL_ID, token=HFTOKEN)
-    model = T5ForConditionalGeneration.from_pretrained(HUB_MODEL_ID, token=HFTOKEN).to(device)
+    # Load the previously trained model
+    tokenizer = T5Tokenizer.from_pretrained("general_model")
+    model = T5ForConditionalGeneration.from_pretrained("general_model").to(device)
 
-    logging.info(f"Model loaded for evaluation on {device}")
+    logging.info(f"Model loaded for fine-tuning on {device}")
     make_model_contiguous(model)
 
-    # Load the new dataset
-    ds = load_dataset("motherduckdb/duckdb-text2sql-25k")
+    # Load healthcare-specific dataset
+    with open('../input/combined_questions.json', 'r') as f:
+        healthcare_data = json.load(f)
 
-    # Rename the columns to match the expected input by the preprocess_function
-    ds = ds.rename_column("prompt", "question")
-    ds = ds.rename_column("query", "answer")
+    train_dataset = Dataset.from_list(healthcare_data)
 
-    # Tokenize the test dataset
-    tokenized_test_dataset = ds["train"].map(
+    tokenized_train_dataset = train_dataset.map(
         lambda examples: preprocess_function(examples, tokenizer),
         batched=True,
-        remove_columns=ds["train"].column_names
+        remove_columns=train_dataset.column_names
     )
 
-    logging.info("Test dataset loaded and tokenized")
+    logging.info("Healthcare-specific dataset loaded and tokenized")
 
-    # Define evaluation arguments
-    eval_args = TrainingArguments(
-        output_dir="eval_output",
-        per_device_eval_batch_size=8,
-        logging_dir="logs",
+    # Define training arguments specifically for the fine-tuning stage
+    training_args = TrainingArguments(
+        output_dir="output",
+        logging_dir=os.path.dirname("fine_tune.log"),
         logging_strategy="steps",
         logging_steps=100,
-        report_to="none"
+        learning_rate=1e-5,
+        per_device_train_batch_size=4,
+        num_train_epochs=1,
+        weight_decay=0.01,
+        push_to_hub=False,
+        hub_token=HFTOKEN,
+        remove_unused_columns=False,
+    )
+    logging.info("Starting second stage training (fine-tuning)")
+
+    trainer = set_trainer(
+        model,
+        training_args,
+        tokenized_train_dataset,
+        None,  # No evaluation dataset provided
+        tokenizer
     )
 
-    # Create a trainer for evaluation
-    trainer = Trainer(
-        model=model,
-        args=eval_args,
-        eval_dataset=tokenized_test_dataset,
-        tokenizer=tokenizer
-    )
+    trainer.train()
+    
+    # Save the fine-tuned model and tokenizer
+    model.save_pretrained("healthcare_model")
+    tokenizer.save_pretrained("healthcare_model")
 
-    # Evaluate the model
-    metrics = trainer.evaluate()
-    logging.info(f"Evaluation metrics: {metrics}")
-
-    print(f"Evaluation metrics: {metrics}")
-
+    logging.info("Second stage training (fine-tuning) completed and model saved")
 
 
 if __name__ == '__main__':
-    # Capture arg from command line to set train/eval mode(s)
+    # Capture arg from command line to set train/eval/sql_eval mode(s)
     if len(sys.argv) < 2:
-        raise ValueError("Please provide a mode: train or eval")
+        raise ValueError("Please provide a mode: first_stage_training or second_stage_training")
     mode = sys.argv[1]
-    if mode == "train":
-        train()
-    elif mode == "eval":
-        eval()
+    if mode == "first_stage_training":
+        first_stage_training()
+    elif mode == "second_stage_training":
+        second_stage_training()
     else:
-        raise ValueError("Mode must be either train or eval")
+        raise ValueError("Mode must be either first_stage_training or second_stage_training")
