@@ -1,0 +1,18 @@
+[
+    {
+        "question": "How many rows are present in the nppes table?",
+        "answer": "SELECT COUNT(*) FROM nppes;"
+    },
+    {
+        "question": "How many medicare-accepting providers are there in the nppes database?",
+        "answer": "SELECT SUM(mdcr_provider) FROM nppes JOIN medicare ON nppes.npi = medicare.npi;"
+    },
+    {
+        "question": "How many physicians are there in the nppes database?",
+        "answer": "SELECT COUNT(physician) FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE physician=1;"
+    },
+    {
+        "question": "What is the total number of patients across all providers?",
+        "answer": "SELECT SUM(patients_total) FROM provider_patients;"
+    }
+]

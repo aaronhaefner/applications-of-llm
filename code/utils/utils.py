@@ -1,13 +1,14 @@
 import os
 import logging
 import torch
+import json
 from transformers import T5Tokenizer, T5ForConditionalGeneration, Trainer, TrainingArguments
 from datasets import load_dataset
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from code.utils.globals import (
+from utils.globals import (
     MODEL_TYPE, MODEL_NAME, STRATEGY, HFTOKEN, SEED,
     DATASET, MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID
 )
@@ -21,9 +22,14 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# Helper functions
-def preprocess_function(examples_to_encode: dict):
-    inputs = examples_to_encode["question"] # input column
+def load_schema(schema_file):
+    with open(schema_file, 'r') as f:
+        schema = json.load(f)
+    return schema
+
+
+def preprocess_function(examples_to_encode: dict, tokenizer):
+    inputs = examples_to_encode["question"]  # input column
     targets = examples_to_encode["answer"]  # target column
 
     inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, padding="max_length", return_tensors="pt")
@@ -118,42 +124,27 @@ def load_train_test(
     test_dataset = raw_data["test"].shuffle(seed=seed).select(range(max_test_samples))
     return train_dataset, test_dataset
 
-# Main function
-if __name__ == '__main__':
-    device = set_device()
-    tokenizer, model = load_tokenizer_model(device)
 
-    logging.info(f"Model loaded on {device}")
-    make_model_contiguous(model)
-
-    # Load dataset, split, tokenize
-    train_dataset, test_dataset = load_train_test(DATASET)
-
-    tokenized_train_dataset = train_dataset.map(
-        preprocess_function,
-        batched=True,
-        remove_columns=train_dataset.column_names)
-
-    tokenized_test_dataset = test_dataset.map(
-        preprocess_function,
-        batched=True,
-        remove_columns=test_dataset.column_names)
-
-    logging.info("Dataset loaded and tokenized")
-
-    # Trainer
-    training_args = set_training_args()    
-    logging.info("Starting training")
-
-    trainer = set_trainer(
-        model,
-        training_args,
-        tokenized_train_dataset,
-        tokenized_test_dataset,
-        tokenizer
+def generate_question(schema):
+    prompt = (
+        "Given the following SQL schema: \n"
+        f"{json.dumps(schema, indent=2)}\n"
+        "Generate a SQL question and its corresponding SQL query."
     )
+    # Use your model to generate a response
+    generated_question = model.generate_question(prompt)
+    return generated_question
 
-    trainer.train()
-    # trainer.push_to_hub()
 
-    logging.info("Training completed and model pushed to Hugging Face Hub")
+def generate_sql_query(question):
+    prompt = (
+        f"Given the question: {question}\n"
+        "Generate the corresponding SQL query."
+    )
+    # Use your model to generate a response
+    generated_sql = model.generate_sql_query(prompt)
+    return generated_sql
+
+
+def evaluate_generated_sql(generated_sql, expected_sql):
+    return generated_sql.strip() == expected_sql.strip()
