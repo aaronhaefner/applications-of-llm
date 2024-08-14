@@ -122,5 +122,8 @@ if __name__ == '__main__':
         first_stage_training()
     elif mode == "second_stage_training":
         second_stage_training()
+    elif mode == "full":
+        first_stage_training()
+        second_stage_training()
     else:
-        raise ValueError("Mode must be either first_stage_training or second_stage_training")
+        raise ValueError("Invalid mode. Please provide either first_stage_training or second_stage_training")
