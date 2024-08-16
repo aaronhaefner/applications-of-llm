@@ -1,4 +1,4 @@
-# Applications of LLM
+# Applications of LLMs
 
 ## Overview
 
