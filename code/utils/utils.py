@@ -2,7 +2,10 @@ import os
 import logging
 import torch
 import json
-from transformers import T5Tokenizer, T5ForConditionalGeneration, Trainer, TrainingArguments
+from transformers import (T5Tokenizer,
+                          T5ForConditionalGeneration,
+                          TrainingArguments,
+                          Trainer)
 from datasets import load_dataset
 from dotenv import load_dotenv
 
@@ -53,13 +56,11 @@ def load_tokenizer_model(model_name: str, device: torch.device) -> tuple:
         model_name,
         token=HFTOKEN,
         legacy=True,
-        clean_up_tokenization_spaces=True)
-    )
+        clean_up_tokenization_spaces=True))
     model = (
         T5ForConditionalGeneration.from_pretrained(
         model_name,
-        token=HFTOKEN).to(device)
-    )
+        token=HFTOKEN).to(device))
     return tokenizer, model
 
 
@@ -173,7 +174,7 @@ def set_device():
     print("Device:", device)
     return device
 
-def set_training_args():
+def set_training_args(push_to_hub: bool=False):
     training_args = TrainingArguments(
         output_dir="output",
         logging_dir=os.path.dirname(log_file_path),
@@ -187,7 +188,7 @@ def set_training_args():
         eval_strategy=STRATEGY,
         eval_steps=100,
         save_strategy=STRATEGY,
-        push_to_hub=True,
+        push_to_hub=push_to_hub,
         hub_model_id=HUB_MODEL_ID,
         hub_token=HFTOKEN,
         remove_unused_columns=False,
