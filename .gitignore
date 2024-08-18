@@ -3,6 +3,7 @@
 code/venv/*
 code/general_model
 code/healthcare_model
+code/*_model
 code/output
 *.log
 code/__pycache__/*

@@ -10,6 +10,21 @@ MODELS = {
 MODEL_TYPE, MODEL_NAME = MODELS["T5"]
 STRATEGY = "steps"
 
+MODEL_PARMS = {"learning_rate": 1e-5,
+               "max_steps": 1000,
+               "warmup_steps": 500,
+               "per_device_train_batch_size": 4,
+               "per_device_eval_batch_size": 4,
+               "weight_decay": 0.01,
+               "logging_dir": "logs",
+               "logging_strategy": "steps",
+               "logging_steps": 100,
+               "save_strategy": "steps",
+               "save_steps": 100,
+               "evaluation_strategy": "steps",
+               "eval_steps": 100,
+               "num_train_epochs": 2}
+
 HFTOKEN = os.getenv("HUGGINGFACE_TOKEN")
 HF_HOME = os.getenv("HF_HOME")
 MAX_TRAIN_SAMPLES = 5000

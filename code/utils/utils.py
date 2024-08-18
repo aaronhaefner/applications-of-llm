@@ -8,7 +8,8 @@ from transformers import (T5Tokenizer,
                           Trainer)
 from datasets import load_dataset
 from dotenv import load_dotenv
-
+from nltk.translate.bleu_score import sentence_bleu
+logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
 from utils.globals import (
@@ -24,6 +25,13 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+def log_generation_results(generated_sql: str, expected_sql: str):
+    logging.info(f"Generated SQL: {generated_sql}")
+    logging.info(f"Expected SQL: {expected_sql}")
+    result = evaluate_generated_sql(generated_sql, expected_sql)
+    logging.info(f"Match: {result['match']}, BLEU Score: {result['bleu_score']}")
+
 
 def load_schema(schema_file: str) -> dict:
     """
@@ -61,6 +69,7 @@ def load_tokenizer_model(model_name: str, device: torch.device) -> tuple:
         T5ForConditionalGeneration.from_pretrained(
         model_name,
         token=HFTOKEN).to(device))
+    make_model_contiguous(model)
     return tokenizer, model
 
 
@@ -133,7 +142,9 @@ def preprocess_function(examples_to_encode: dict,
         "labels": labels.squeeze(0)
     }
 
-def process_tokenizer(tokenizer: T5Tokenizer, train_dataset: dict, test_dataset: dict) -> tuple:
+def process_tokenizer(tokenizer: T5Tokenizer,
+                      train_dataset: dict,
+                      test_dataset: dict) -> tuple:
     """
     Tokenize the train and test datasets.
 
@@ -216,47 +227,104 @@ def set_trainer(model, training_args, train_dataset, test_dataset, tokenizer):
     return trainer
 
 
-def generate_question(model: T5ForConditionalGeneration, schema: dict) -> str:
+def generate_text(prompt: str, model, tokenizer, device, num: int = 1, max_length: int = 100) -> list:
     """
-    Generate a SQL question given a schema.
+    Generate text based on the given prompt.
 
     Args:
-        schema (dict): The SQL schema.
+        prompt (str): The input text prompt.
+        model: The model to use.
+        tokenizer: The tokenizer associated with the model.
+        device: The device on which to perform the generation.
+        num (int): Number of generated sequences. Default is 1.
+        max_length (int): The maximum length of the generated sequences. Default is 100.
 
     Returns:
-        str: The generated SQL question.
+        list: A list of generated texts.
     """
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    outputs = model.generate(**inputs, max_length=max_length, num_return_sequences=num, do_sample=True)
+    return [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+
+
+def generate_questions(model, tokenizer, device, num: int = 1) -> list:
+    """
+    Generate SQL questions.
+
+    Args:
+        model: The model to use.
+        tokenizer: The tokenizer associated with the model.
+        device: The device on which to perform the generation.
+        num (int): Number of questions to generate. Default is 1.
+
+    Returns:
+        list: A list of generated SQL questions.
+    """
+    prompt = "Generate a SQL question that could be used in a typical database query."
+    return generate_text(prompt, model, tokenizer, device, num)
+
+
+def generate_sql_query(question: str, model, tokenizer, device, schema_path: str = "../input/schema.json") -> str:
+    """
+    Generate a SQL query given a question and schema.
+
+    Args:
+        question (str): The question to generate a SQL query for.
+        model: The model to use.
+        tokenizer: The tokenizer associated with the model.
+        device: The device on which to perform the generation.
+        schema_path (str): Path to the JSON schema file.
+
+    Returns:
+        str: The generated SQL query.
+    """
+    # schema_str = json.dumps(load_schema(schema_path), indent=2)
     prompt = (
-        "Given the following SQL schema: \n"
-        f"{json.dumps(schema, indent=2)}\n"
-        "Generate a SQL question and its corresponding SQL query."
+        f"Generate a SQL query that answers the following question:\n{question}"
     )
-    # Use your model to generate a response
-    generated_question = model.generate_question(prompt)
-    return generated_question
+    return generate_text(prompt, model, tokenizer, device)[0]
 
 
-def generate_sql_query(question: str, model: T5ForConditionalGeneration) -> str:
+def generate_multiple_questions(model: T5ForConditionalGeneration, schema: dict, num_examples: int = 5) -> list:
+    questions = []
+    for _ in range(num_examples):
+        questions.append(generate_question(model, schema))
+    return questions
+
+
+def generate_sql_query(question: str, model: T5ForConditionalGeneration, tokenizer, device) -> str:
     """
     Generate a SQL query given a question.
 
     Args:
         question (str): The question to generate a SQL query for.
         model (T5ForConditionalGeneration): The model to use.
+        tokenizer: The tokenizer associated with the model.
+        device: The device on which to perform the generation.
 
     Returns:
         str: The generated SQL query.
     """
-    prompt = (
-        f"Given the question: {question}\n"
-        "Generate the corresponding SQL query."
-    )
-    # Use your model to generate a response
-    generated_sql = model.generate_sql_query(prompt)
+    prompt = f"Given the question: {question}\nGenerate the corresponding SQL query."
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    
+    # Generate the output
+    outputs = model.generate(**inputs, max_length=100, num_return_sequences=1, do_sample=True)
+    
+    # Decode the output to get the generated SQL query
+    generated_sql = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
     return generated_sql
 
 
-def evaluate_generated_sql(generated_sql: str, expected_sql: str) -> bool:
+def generate_multiple_sql_queries(model: T5ForConditionalGeneration, questions: list) -> list:
+    sql_queries = []
+    for question in questions:
+        sql_queries.append(generate_sql_query(question, model))
+    return sql_queries
+
+
+def evaluate_generated_sql(generated_sql: str, expected_sql: str) -> dict:
     """
     Evaluate the generated SQL query against the expected SQL query.
 
@@ -265,7 +333,32 @@ def evaluate_generated_sql(generated_sql: str, expected_sql: str) -> bool:
         expected_sql (str): The expected SQL query.
     
     Returns:
-        bool: True if the generated SQL query matches the expected SQL query,
-        else False.
+        dict: A dictionary containing match status and BLEU score.
     """
-    return generated_sql.strip() == expected_sql.strip()
+    match = generated_sql.strip() == expected_sql.strip()
+    bleu_score = compute_bleu_score(generated_sql, expected_sql)
+    return {"match": match, "bleu_score": bleu_score}
+
+def compute_bleu_score(generated_sql: str, reference_sql: str) -> float:
+    """
+    Compute the BLEU score for the 
+    generated SQL query against the reference SQL query.
+
+    Args:
+        generated_sql (str): The generated SQL query.
+        reference_sql (str): The reference SQL query.
+
+    Returns:
+        float: The BLEU score.
+    """
+    reference = [reference_sql.split()]
+    candidate = generated_sql.split()
+    return sentence_bleu(reference, candidate)
+
+def evaluate_batch(generated_sqls: list, expected_sqls: list) -> list:
+    results = []
+    for generated_sql, expected_sql in zip(generated_sqls, expected_sqls):
+        result = evaluate_generated_sql(generated_sql, expected_sql)
+        results.append(result)
+        log_generation_results(generated_sql, expected_sql)
+    return results
