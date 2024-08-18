@@ -82,7 +82,7 @@ def generate_sql_query(question: str,
         str: The generated SQL query.
     """
     prompt = (
-        f"Generate a SQL query that answers the following question:\n{question}"
+        f"Write a SQL query to:\n{question}"
     )
     return generate_text(prompt, model, tokenizer, device)[0]
 

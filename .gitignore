@@ -9,3 +9,4 @@ code/utils/__pycache__/*
 *.out
 code/results/*
 input/paraphrased_examples.json
+code/flan*

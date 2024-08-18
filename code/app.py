@@ -44,5 +44,26 @@ def paraphrase_sql_questions():
                          tokenized_train_dataset, tokenized_test_dataset,
                          model_save_name)
 
+# Implement this once paraphrasing works for extending training data
+def text_to_sql():
+    device = set_device()
+    model_name = "google/flan-t5-base"
+    model_type = "T5"
+    model_save_name = "flan-t5-base-text2sql"
+    pass
+ 
+    # # Load the fine-tuned model
+    # model_name = "domain_model2"  # Fine-tuned model name
+    # tokenizer, model = load_tokenizer_model(model_name, device)
+
+    # # Input the question and expected SQL query
+    # input_question = "count the total number of npis in the nppes table in the state of California"
+    # expected_sql = "SELECT npi FROM nppes WHERE plocstatename = 'CA';"
+
+    # # Generate the corresponding SQL query for the input question
+    # generated_sql_query = generate_sql_query(input_question, model, tokenizer, device)
+    # logging.info(f"Generated SQL Query: {generated_sql_query}")
+    # INFO:root:Generated SQL Query: NPIs_state_name = 'California'd
+
 if __name__ == '__main__':
     paraphrase_sql_questions()
