@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def first_stage_training(tokenizer, model, device: torch.device, 
-                         tokenized_train_dataset, tokenized_test_dataset, 
+                         tokenized_train_dataset, tokenized_test_dataset,
+                         model_save_name: str,
                          push_to_hub: bool = False) -> None:
     """
     Train the model on the tokenized input dataset.
@@ -60,8 +61,8 @@ def first_stage_training(tokenizer, model, device: torch.device,
         trainer.push_to_hub()
     
     # Save the model and tokenizer
-    model.save_pretrained("fine_tuned_model")
-    tokenizer.save_pretrained("fine_tuned_model")
+    model.save_pretrained(model_save_name)
+    tokenizer.save_pretrained(model_save_name)
 
     logging.info("First stage training completed and model saved")
 

@@ -24,6 +24,7 @@ def paraphrase_sql_questions():
     device = set_device()
     model_name = "google/flan-t5-base"
     model_type = "T5"
+    model_save_name = "flan-t5-base-paraphrase"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
@@ -40,7 +41,8 @@ def paraphrase_sql_questions():
 
     # Train the model using the tokenized datasets
     first_stage_training(tokenizer, model, device, 
-                         tokenized_train_dataset, tokenized_test_dataset)
+                         tokenized_train_dataset, tokenized_test_dataset,
+                         model_save_name)
 
 if __name__ == '__main__':
     paraphrase_sql_questions()
