@@ -15,13 +15,12 @@ HEALTH_DATASET = "Nicolybgs/healthcare_data"
 EXAMPLES = "../input/question_query.json"
 MODEL_ID = "PASS"
 
-
 if __name__ == '__main__':
     device = set_device()
-    # model_name = "general_model"  # google/flan-t5-base
-    # tokenizer, model = load_tokenizer_model(model_name, device)
+    model_name = "general_model"  # google/flan-t5-base
+    tokenizer, model = load_tokenizer_model(model_name, device)
     examples = "../input/question_query.json"
-    # fine_tune_training(tokenizer, model, examples, device)
+    fine_tune_training(tokenizer, model, examples, device)
     
     # Load the fine-tuned model
     model_name = "domain_model"  # Fine-tuned model name
