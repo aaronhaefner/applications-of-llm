@@ -72,6 +72,8 @@ def fine_tune_training(tokenizer: T5Tokenizer,
                           model: T5ForConditionalGeneration,
                           examples_file: str,
                           device: torch.device,
+                          save_name: str="domain_model",
+                          save_model: bool=False,
                           push_to_hub: bool=False) -> None:
     """
     Load the previously trained model and fine-tune it on domain-specific data.
@@ -81,6 +83,7 @@ def fine_tune_training(tokenizer: T5Tokenizer,
         model (T5ForConditionalGeneration): The model to fine-tune.
         examples_file (str): The file containing the domain-specific data.
         device (torch.device): The device to use for training.
+        save_model (bool): Whether to save the fine-tuned model.
         push_to_hub (bool): Whether to push the trained model to Hugging Face.
 
     Returns: None
@@ -126,8 +129,9 @@ def fine_tune_training(tokenizer: T5Tokenizer,
     trainer.train()
     
     # Save the fine-tuned model and tokenizer
-    model.save_pretrained("domain_model")
-    tokenizer.save_pretrained("domain_model")
+    if save_model:
+        model.save_pretrained(save_name)
+        tokenizer.save_pretrained(save_name)
 
     logging.info("Fine-tuning stage completed and model saved")
 
