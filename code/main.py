@@ -17,44 +17,42 @@ from datasets import Dataset
 from dotenv import load_dotenv
 load_dotenv()
 
-def first_stage_training(tokenizer: T5Tokenizer,
-                         model: T5ForConditionalGeneration,
-                         device: torch.device,
-                         push_to_hub: bool=False,
-                         dataset: str=DATASET) -> None:
+def first_stage_training(tokenizer, model, device: torch.device, 
+                         tokenized_train_dataset, tokenized_test_dataset, 
+                         push_to_hub: bool = False) -> None:
     """
-    Load the model and tokenizer from the 
-    Hugging Face hub and train it on the input dataset.
+    Train the model on the tokenized input dataset.
 
     Args:
-        tokenizer (T5Tokenizer): The tokenizer to use.
-        model (T5ForConditionalGeneration): The model to train.
+        tokenizer: The tokenizer to use (e.g., T5Tokenizer, PegasusTokenizer).
+        model: The model to train (e.g., T5ForConditionalGeneration,
+        PegasusForConditionalGeneration).
         device (torch.device): The device to use for training.
+        tokenized_train_dataset: The tokenized training dataset.
+        tokenized_test_dataset: The tokenized testing dataset.
         push_to_hub (bool): Whether to push the trained model to Hugging Face.
-        dataset (str): The dataset to use for training.
-    
+
     Returns: None
     """
-    # Load the dataset
-    train_dataset, test_dataset = load_train_test(dataset)
+    training_args = TrainingArguments(
+        output_dir="./results",
+        eval_strategy="epoch",
+        learning_rate=2e-5,
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
+        num_train_epochs=3,
+        weight_decay=0.01,
+        save_total_limit=2,
+        push_to_hub=push_to_hub
+        # gradient_accumulation_steps = 2,
+    )
 
-    tokenized_train_dataset, tokenized_test_dataset = process_tokenizer(
-        tokenizer,
-        train_dataset,
-        test_dataset)
-
-    logging.info("General dataset loaded and tokenized")
-
-    # Trainer
-    training_args = set_training_args()    
-    logging.info("Starting first stage training")
-
-    trainer = set_trainer(
-        model,
-        training_args,
-        tokenized_train_dataset,
-        tokenized_test_dataset,
-        tokenizer
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=tokenized_train_dataset,
+        eval_dataset=tokenized_test_dataset,
+        tokenizer=tokenizer
     )
 
     trainer.train()
@@ -62,8 +60,8 @@ def first_stage_training(tokenizer: T5Tokenizer,
         trainer.push_to_hub()
     
     # Save the model and tokenizer
-    model.save_pretrained("general_model")
-    tokenizer.save_pretrained("general_model")
+    model.save_pretrained("fine_tuned_model")
+    tokenizer.save_pretrained("fine_tuned_model")
 
     logging.info("First stage training completed and model saved")
 

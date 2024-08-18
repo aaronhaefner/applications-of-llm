@@ -7,3 +7,4 @@ code/output
 code/__pycache__/*
 code/utils/__pycache__/*
 *.out
+code/results/*

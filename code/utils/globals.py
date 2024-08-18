@@ -21,7 +21,7 @@ MODEL_PARMS = {"learning_rate": 1e-5,
                "logging_steps": 100,
                "save_strategy": "steps",
                "save_steps": 100,
-               "evaluation_strategy": "steps",
+               "eval_strategy": "steps",
                "eval_steps": 100,
                "num_train_epochs": 2}
 

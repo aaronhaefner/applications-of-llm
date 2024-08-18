@@ -30,7 +30,7 @@ def log_generation_results(generated_sql: str, expected_sql: str):
     logging.info(f"Generated SQL: {generated_sql}")
     logging.info(f"Expected SQL: {expected_sql}")
     result = evaluate_generated_sql(generated_sql, expected_sql)
-    logging.info(f"Match: {result['match']}, BLEU Score: {result['bleu_score']}")
+    logging.info(f"Match: {result['match']},BLEU Score: {result['bleu_score']}")
 
 
 def load_schema(schema_file: str) -> dict:
@@ -73,12 +73,12 @@ def load_tokenizer_model(model_name: str, device: torch.device) -> tuple:
     return tokenizer, model
 
 
-def load_train_test(
-        dataset_name: str,
-        seed : int=SEED,
-        max_train_samples: int=MAX_TRAIN_SAMPLES,
-        max_test_samples: int=MAX_TEST_SAMPLES
-    ):
+# Load and preprocess dataset
+def load_train_test(dataset_name: str,
+                    seed: int = 42,
+                    max_train_samples: int = None,
+                    max_test_samples: int = None,
+                    test_size: float = 0.2) -> tuple:
     """
     Load dataset from Hugging Face and split into train and test sets.
 
@@ -87,33 +87,33 @@ def load_train_test(
         seed (int): The random seed to use for shuffling.
         max_train_samples (int): The maximum number of samples for training.
         max_test_samples (int): The maximum number of samples for testing.
+        test_size (float): Proportion of the dataset in the test split.
 
     Returns:
         tuple: The train and test datasets.
     """
-    data = (
-        load_dataset(
-        dataset_name,
-        split="train").train_test_split(test_size=TEST_SIZE)
-    )
-    
-    train_dataset = (
-        data["train"].shuffle(seed=seed).select(range(max_train_samples))
-    )
-    test_dataset = (
-        data["test"].shuffle(seed=seed).select(range(max_test_samples))
-    )
+    data = load_dataset(dataset_name,
+                        split="train").train_test_split(test_size=test_size)
+    train_dataset = data["train"].shuffle(seed=seed)
+    if max_train_samples:
+        train_dataset = train_dataset.select(range(max_train_samples))
+
+    test_dataset = data["test"].shuffle(seed=seed)
+    if max_test_samples:
+        test_dataset = test_dataset.select(range(max_test_samples))
+
     return train_dataset, test_dataset
 
 
 def preprocess_function(examples_to_encode: dict,
-                        tokenizer: T5Tokenizer) -> dict:
+                        tokenizer, model_type: str = "T5") -> dict:
     """
     Encode the input and target columns using the tokenizer.
 
     Args:
         examples_to_encode (dict): The input examples to encode.
-        tokenizer (T5Tokenizer): The tokenizer to use.
+        tokenizer: The tokenizer to use.
+        model_type (str): The model type ("T5", "PEGASUS", etc.).
 
     Returns:
         dict: The encoded input and target columns.
@@ -121,30 +121,31 @@ def preprocess_function(examples_to_encode: dict,
     inputs = examples_to_encode["question"]  # input column
     targets = examples_to_encode["answer"]  # target column
 
-    inputs_encoded = tokenizer(
-        inputs,
-        max_length=512,
-        truncation=True,
-        padding="max_length",
-        return_tensors="pt")
-    input_ids = inputs_encoded.input_ids
-
-    targets_encoded = tokenizer(
-        targets,
-        max_length=512,
-        truncation=True,
-        padding="max_length",
-        return_tensors="pt")
-    labels = targets_encoded.input_ids
+    if model_type == "T5":
+        inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
+                                   padding="max_length", return_tensors="pt")
+        targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
+                                    padding="max_length", return_tensors="pt")
+    elif model_type == "PEGASUS":
+        inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
+                                   padding="longest", return_tensors="pt")
+        targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
+                                    padding="longest", return_tensors="pt")
+    else:
+        inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
+                                   padding="max_length", return_tensors="pt")
+        targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
+                                    padding="max_length", return_tensors="pt")
 
     return {
-        "input_ids": input_ids.squeeze(0),
-        "labels": labels.squeeze(0)
+        "input_ids": inputs_encoded.input_ids.squeeze(0),
+        "labels": targets_encoded.input_ids.squeeze(0)
     }
 
 def process_tokenizer(tokenizer,
                       train_dataset: dict,
-                      test_dataset: dict) -> tuple:
+                      test_dataset: dict,
+                      model_type: str = "T5") -> tuple:
     """
     Tokenize the train and test datasets.
 
@@ -152,22 +153,21 @@ def process_tokenizer(tokenizer,
         tokenizer: The tokenizer to use.
         train_dataset (dict): The training dataset.
         test_dataset (dict): The testing dataset.
+        model_type (str): The model type ("T5", "PEGASUS", etc.).
 
     Returns:
         tuple: The tokenized train and test datasets.
     """
     tokenized_train_dataset = train_dataset.map(
-        lambda examples: preprocess_function(examples, tokenizer),
-        batched=True,
-        remove_columns=train_dataset.column_names
-    )
-
+        lambda examples: preprocess_function(
+            examples, tokenizer, model_type),
+            batched=True, remove_columns= train_dataset.column_names)
     tokenized_test_dataset = test_dataset.map(
-        lambda examples: preprocess_function(examples, tokenizer),
-        batched=True,
-        remove_columns=test_dataset.column_names
-    )
-    return (tokenized_train_dataset, tokenized_test_dataset)
+        lambda examples: preprocess_function(
+            examples,tokenizer, model_type),
+            batched=True, remove_columns=test_dataset.column_names)
+    return tokenized_train_dataset, tokenized_test_dataset
+
 
 # Make model contiguous
 def make_model_contiguous(model):
@@ -227,7 +227,10 @@ def set_trainer(model, training_args, train_dataset, test_dataset, tokenizer):
     return trainer
 
 
-def generate_text(prompt: str, model, tokenizer, device, num: int = 1, max_length: int = 100) -> list:
+def generate_text(prompt: str,
+                  model,
+                  tokenizer,
+                  device, num: int = 1, max_length: int = 100) -> list:
     """
     Generate text based on the given prompt.
 
@@ -243,8 +246,13 @@ def generate_text(prompt: str, model, tokenizer, device, num: int = 1, max_lengt
         list: A list of generated texts.
     """
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
-    outputs = model.generate(**inputs, max_length=max_length, num_return_sequences=num, do_sample=True)
-    return [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+
+    outputs = model.generate(
+        **inputs, max_length=max_length,
+        num_return_sequences=num, do_sample=True)
+
+    return [tokenizer.decode(output,
+                             skip_special_tokens=True) for output in outputs]
 
 
 def generate_questions(model, tokenizer, device, num: int = 1) -> list:
@@ -260,11 +268,16 @@ def generate_questions(model, tokenizer, device, num: int = 1) -> list:
     Returns:
         list: A list of generated SQL questions.
     """
-    prompt = "Generate a SQL question that could be used in a typical database query."
+    prompt = "Generate a SQL question that \
+        could be used in a typical database query."
     return generate_text(prompt, model, tokenizer, device, num)
 
 
-def generate_sql_query(question: str, model, tokenizer, device, schema_path: str = "../input/schema.json") -> str:
+def generate_sql_query(question: str,
+                       model,
+                       tokenizer,
+                       device: torch.device,
+                       schema_path: str = "../input/schema.json") -> str:
     """
     Generate a SQL query given a question and schema.
 
@@ -278,7 +291,6 @@ def generate_sql_query(question: str, model, tokenizer, device, schema_path: str
     Returns:
         str: The generated SQL query.
     """
-    # schema_str = json.dumps(load_schema(schema_path), indent=2)
     prompt = (
         f"Generate a SQL query that answers the following question:\n{question}"
     )
