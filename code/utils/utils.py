@@ -142,14 +142,14 @@ def preprocess_function(examples_to_encode: dict,
         "labels": labels.squeeze(0)
     }
 
-def process_tokenizer(tokenizer: T5Tokenizer,
+def process_tokenizer(tokenizer,
                       train_dataset: dict,
                       test_dataset: dict) -> tuple:
     """
     Tokenize the train and test datasets.
 
     Args:
-        tokenizer (T5Tokenizer): The tokenizer to use.
+        tokenizer: The tokenizer to use.
         train_dataset (dict): The training dataset.
         test_dataset (dict): The testing dataset.
 
