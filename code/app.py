@@ -12,7 +12,7 @@ from utils.utils import (set_device, process_tokenizer,
 from utils.generative_utils import (generate_sql_query, generate_questions,
                                     generate_multiple_questions,
                                     evaluate_generated_sql)
-from main import first_stage_training, fine_tune_training
+from utils.main import first_stage_training, fine_tune_training
 from dotenv import load_dotenv
 load_dotenv()
 
