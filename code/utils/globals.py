@@ -33,5 +33,5 @@ TEST_SIZE = 0.2
 SEED = 42
 
 HUB_MODEL_ID = f"{HUB_NAME}/{REPO_NAME}"
-DATASET = "philikai/200k-Text2SQL" # https://huggingface.co/datasets/philikai/200k-Text2SQL
-HEALTHCARE = "Nicolybgs/healthcare_data" # https://huggingface.co/datasets/Nicolybgs/healthcare_data
+BASE_SQL_DATASET = "philikai/200k-Text2SQL" # https://huggingface.co/datasets/philikai/200k-Text2SQL
+HEALTHCARE_DATASET = "Nicolybgs/healthcare_data" # https://huggingface.co/datasets/Nicolybgs/healthcare_data
