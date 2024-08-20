@@ -1,18 +1,8 @@
-import os
-import sys
 import logging
-import json
 import torch
-from utils.utils import (
-    set_device, load_tokenizer_model, make_model_contiguous,
-    load_train_test, preprocess_function, process_tokenizer, 
-    set_training_args, set_trainer)
-from utils.globals import (DATASET, MODEL_NAME, HUB_MODEL_ID, HFTOKEN)
-from transformers import (T5Tokenizer,
-                          T5ForConditionalGeneration,
-                          TrainingArguments,
-                          Trainer)
-from datasets import Dataset
+from transformers import (TrainingArguments, Trainer)
+from torch.profiler import profile, ProfilerActivity, tensorboard_trace_handler
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -44,17 +34,17 @@ def train_model(tokenizer, model, device: torch.device,
     Train or fine-tune the model on the given dataset.
 
     Args:
-        tokenizer: The tokenizer to use.
-        model: The model to train or fine-tune.
-        device: The device to use for training.
-        prefs (dict): The preferences for training.
-        train_dataset: The tokenized training dataset.
-        eval_dataset: The tokenized evaluation dataset (optional).
+        tokenizer: The tokenizer for the model.
+        model: The model to train.
+        device (torch.device): The device to train the model on.
+        prefs (dict): The preferences dictionary.
+        train_dataset: The training dataset.
+        eval_dataset: The evaluation dataset.
         save_name (str): The name to save the model as.
         save_model (bool): Whether to save the model.
-        push_to_hub (bool): Whether to push the trained model to Hugging Face.
-        fine_tune (bool): Whether this is a fine-tuning stage.
-
+        push_to_hub (bool): Whether to push the model to the Hugging Face Hub.
+        fine_tune (bool): Whether to fine-tune the model.
+    
     Returns: None
     """
     epochs, learning_rate, per_device_train_batch_size, \
@@ -75,7 +65,8 @@ def train_model(tokenizer, model, device: torch.device,
         per_device_eval_batch_size=per_device_eval_batch_size,
         num_train_epochs=epochs,
         weight_decay=weight_decay,
-        push_to_hub=push_to_hub
+        push_to_hub=push_to_hub,
+        fp16=True  # Enable mixed precision for faster training
     )
 
     trainer = Trainer(
@@ -86,7 +77,19 @@ def train_model(tokenizer, model, device: torch.device,
         tokenizer=tokenizer
     )
 
-    trainer.train()
+    # Profiler setup
+    with profile(
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+        schedule=torch.profiler.schedule(
+            wait=1, warmup=1,
+            active=3, repeat=1),
+        on_trace_ready=tensorboard_trace_handler("./log_dir"),
+        record_shapes=True,
+        profile_memory=True,
+        with_stack=True
+    ) as prof:
+        trainer.train()  # Start training
+        prof.step()  # Step profiler at each iteration
 
     if push_to_hub:
         trainer.push_to_hub()
