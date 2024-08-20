@@ -1,5 +1,3 @@
-# Issue Summary
-
 <!-- Provide a brief summary of the issue. -->
 
 ## Context
@@ -13,12 +11,9 @@
 <!-- List the steps needed to reproduce the issue. -->
 1. 
 
-## Expected Behavior
+## Expected/Actual Behavior
 
 <!-- What did you expect to happen? -->
-
-## Actual Behavior
-
 <!-- What actually happened? Include error messages or logs if applicable. -->
 
 ## Additional Information
