@@ -16,6 +16,7 @@ from datasets import Dataset
 from dotenv import load_dotenv
 load_dotenv()
 
+
 def unpack_prefs(prefs: dict) -> dict:
     """
     Unpack the preferences dictionary into individual variables.
@@ -34,11 +35,11 @@ def unpack_prefs(prefs: dict) -> dict:
     return (epochs, learning_rate, per_device_train_batch_size,
             per_device_eval_batch_size, weight_decay)
 
+
 def train_model(tokenizer, model, device: torch.device, 
-                train_dataset, prefs: dict,
-                eval_dataset=None, save_name: str="model",
-                save_model: bool=False, push_to_hub: bool=False, 
-                fine_tune: bool=False) -> None:
+                prefs: dict, train_dataset, eval_dataset=None,
+                save_name: str=None, save_model: bool=False,
+                push_to_hub: bool=False, fine_tune: bool=False) -> None:
     """
     Train or fine-tune the model on the given dataset.
 
@@ -46,8 +47,8 @@ def train_model(tokenizer, model, device: torch.device,
         tokenizer: The tokenizer to use.
         model: The model to train or fine-tune.
         device: The device to use for training.
-        train_dataset: The tokenized training dataset.
         prefs (dict): The preferences for training.
+        train_dataset: The tokenized training dataset.
         eval_dataset: The tokenized evaluation dataset (optional).
         save_name (str): The name to save the model as.
         save_model (bool): Whether to save the model.
@@ -98,35 +99,3 @@ def train_model(tokenizer, model, device: torch.device,
     else:
         logging.info(f"{'Fine-tuning' if fine_tune else 'Training'} completed, model not saved")
 
-if __name__ == '__main__':
-    push_to_hub = False
-    model_name = MODEL_NAME
-    device = set_device()
-
-    if len(sys.argv) < 2:
-        raise ValueError("Please provide a mode: first_stage_training, fine_tune_training, or full")
-    mode = sys.argv[1]
-    prefs = {}  # Define your training preferences here
-
-    if mode == "first_stage_training":
-        tokenizer, model = load_tokenizer_model(model_name)
-        train_dataset, eval_dataset = load_train_test(tokenizer)
-        train_model(tokenizer, model, device, train_dataset, prefs, eval_dataset=eval_dataset, save_name="first_stage_model", save_model=True, push_to_hub=push_to_hub)
-    elif mode == "fine_tune_training":
-        tokenizer, model = load_tokenizer_model(model_name)
-        with open('../input/question_query.json', 'r') as f:
-            domain_data = json.load(f)
-        train_dataset = Dataset.from_list(domain_data)
-        tokenized_train_dataset = train_dataset.map(lambda examples: preprocess_function(examples, tokenizer), batched=True, remove_columns=train_dataset.column_names)
-        train_model(tokenizer, model, device, tokenized_train_dataset, prefs, save_name="domain_model", save_model=True, push_to_hub=push_to_hub, fine_tune=True)
-    elif mode == "full":
-        tokenizer, model = load_tokenizer_model(model_name)
-        train_dataset, eval_dataset = load_train_test(tokenizer)
-        train_model(tokenizer, model, device, train_dataset, prefs, eval_dataset=eval_dataset, save_name="first_stage_model", save_model=True, push_to_hub=push_to_hub)
-        with open('../input/question_query.json', 'r') as f:
-            domain_data = json.load(f)
-        train_dataset = Dataset.from_list(domain_data)
-        tokenized_train_dataset = train_dataset.map(lambda examples: preprocess_function(examples, tokenizer), batched=True, remove_columns=train_dataset.column_names)
-        train_model(tokenizer, model, device, tokenized_train_dataset, prefs, save_name="domain_model", save_model=True, push_to_hub=push_to_hub, fine_tune=True)
-    else:
-        raise ValueError("Invalid mode. Please provide either first_stage_training, fine_tune_training, or full")
