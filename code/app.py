@@ -12,7 +12,7 @@ from utils.utils import (set_device, process_tokenizer,
 from utils.generative_utils import (generate_sql_query, generate_questions,
                                     generate_multiple_questions,
                                     evaluate_generated_sql)
-from utils.main import first_stage_training, fine_tune_training
+from utils.main import train_model
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -20,9 +20,13 @@ HEALTH_DATASET = "Nicolybgs/healthcare_data"
 EXAMPLES = "../input/question_query.json"
 MODEL_ID = "PASS"
 
-def train_flan_t5_base():
+# train_dataset = Dataset.from_list(domain_data)
+
+def train_flan_t5(model_size: str = "small",
+                  max_train_samples: int = 5000,
+                  max_test_samples: int = 1000) -> None:
     """
-    Train the Flan T5 base model on a SQL question-answer dataset.
+    Train a Flan T5 model on a SQL question-answer dataset.
 
     Args:
         None
@@ -30,6 +34,7 @@ def train_flan_t5_base():
     Returns: None
     """
 
+    # Set prefs for training
     prefs = {
         'epochs': 1,
         'learning_rate': 2e-5,
@@ -38,9 +43,8 @@ def train_flan_t5_base():
         'weight_decay': 0.01,
     }
     device = set_device()
-    model_name = "google/flan-t5-base"
+    model_name = f"google/flan-t5-{model_size}"
     model_type = "T5"
-    model_save_name = "t5_flan_txt2sql"
 
     # tokenizer = T5Tokenizer.from_pretrained(model_name)
     # model = T5ForConditionalGeneration.from_pretrained(model_name).to(device)
@@ -49,18 +53,15 @@ def train_flan_t5_base():
     dataset_name = "philikai/200k-Text2SQL"
 
     # Load and process the datasets
-    train_dataset, test_dataset = load_train_test(dataset_name)
+    train_dataset, test_dataset = load_train_test(dataset_name,
+        max_train_samples=max_train_samples, max_test_samples=max_test_samples)
+
     tokenized_train_dataset, tokenized_test_dataset = process_tokenizer(
-        tokenizer, 
-        train_dataset, 
-        test_dataset, 
-        model_type=model_type
-    )
+        tokenizer, train_dataset, test_dataset, model_type=model_type)
 
     # Train the model using the tokenized datasets
-    first_stage_training(tokenizer, model, device, 
-                         tokenized_train_dataset, tokenized_test_dataset,
-                         model_save_name)
+    train_model(tokenizer, model, device, prefs,
+                tokenized_train_dataset, tokenized_test_dataset)
 
 
 def paraphrase_sql_questions():
@@ -83,7 +84,7 @@ def paraphrase_sql_questions():
     )
 
     # Train the model using the tokenized datasets
-    first_stage_training(tokenizer, model, device, 
+    train_model(tokenizer, model, device, 
                          tokenized_train_dataset, tokenized_test_dataset,
                          model_save_name)
 
@@ -109,4 +110,6 @@ def text_to_sql():
     # INFO:root:Generated SQL Query: NPIs_state_name = 'California'd
 
 if __name__ == '__main__':
-    paraphrase_sql_questions()
+    # paraphrase_sql_questions()
+    train_flan_t5()
+    # text_to_sql()
