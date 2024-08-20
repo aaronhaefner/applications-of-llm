@@ -17,12 +17,11 @@ def unpack_prefs(prefs: dict) -> dict:
     epochs = prefs['epochs']
     learning_rate = prefs['learning_rate']
     per_device_train_batch_size = prefs['per_device_train_batch_size']
-    per_device_eval_batch_size = prefs.get('per_device_eval_batch_size', None)
+    per_device_eval_batch_size = prefs['per_device_eval_batch_size']
     weight_decay = prefs['weight_decay']
-    dataset_name = prefs['dataset_name']
 
     return (epochs, learning_rate, per_device_train_batch_size,
-            per_device_eval_batch_size, weight_decay, dataset_name)
+            per_device_eval_batch_size, weight_decay)
 
 
 def train_model(tokenizer, model, device: torch.device, 
@@ -47,7 +46,7 @@ def train_model(tokenizer, model, device: torch.device,
     Returns: None
     """
     epochs, learning_rate, per_device_train_batch_size, \
-        per_device_eval_batch_size, weight_decay, _ = unpack_prefs(prefs)
+        per_device_eval_batch_size, weight_decay = unpack_prefs(prefs)
 
     # Set output directories based on training stage
     output_dir = "./results_fine_tuning" if fine_tune else "./results"
@@ -84,6 +83,12 @@ def train_model(tokenizer, model, device: torch.device,
     if save_model:
         model.save_pretrained(save_name)
         tokenizer.save_pretrained(save_name)
-        logging.info(f"{'Fine-tuning' if fine_tune else 'Training'} completed and model saved as {save_name}")
+        logging.info(
+            f"{'Fine-tuning' if fine_tune else 'Training'} "
+            f"completed and model saved as {save_name}"
+        )
     else:
-        logging.info(f"{'Fine-tuning' if fine_tune else 'Training'} completed, model not saved")
+        logging.info(
+            f"{'Fine-tuning' if fine_tune else 'Training'} "
+            f"completed, model not saved"
+        )
