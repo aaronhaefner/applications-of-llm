@@ -2,10 +2,8 @@ import os
 import logging
 import torch
 import json
-from transformers import (T5Tokenizer,
-                          T5ForConditionalGeneration,
-                          TrainingArguments,
-                          Trainer)
+from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM,
+                          TrainingArguments, Trainer)
 from datasets import load_dataset
 from dotenv import load_dotenv
 from nltk.translate.bleu_score import sentence_bleu
@@ -14,7 +12,7 @@ load_dotenv()
 
 from utils.globals import (
     MODEL_TYPE, MODEL_NAME, STRATEGY, HFTOKEN, SEED,
-    DATASET, MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID
+    MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID
 )
 
 # Configure logging
@@ -60,13 +58,13 @@ def load_tokenizer_model(model_name: str, device: torch.device) -> tuple:
         tuple: The tokenizer and model.
     """
     tokenizer = (
-        T5Tokenizer.from_pretrained(
+        AutoTokenizer.from_pretrained(
         model_name,
         token=HFTOKEN,
         legacy=True,
         clean_up_tokenization_spaces=True))
     model = (
-        T5ForConditionalGeneration.from_pretrained(
+        AutoModelForSeq2SeqLM.from_pretrained(
         model_name,
         token=HFTOKEN).to(device))
     make_model_contiguous(model)
@@ -297,20 +295,20 @@ def generate_sql_query(question: str,
     return generate_text(prompt, model, tokenizer, device)[0]
 
 
-def generate_multiple_questions(model: T5ForConditionalGeneration, schema: dict, num_examples: int = 5) -> list:
+def generate_multiple_questions(model, schema: dict, num_examples: int = 5) -> list:
     questions = []
     for _ in range(num_examples):
         questions.append(generate_question(model, schema))
     return questions
 
 
-def generate_sql_query(question: str, model: T5ForConditionalGeneration, tokenizer, device) -> str:
+def generate_sql_query(question: str, model, tokenizer, device) -> str:
     """
     Generate a SQL query given a question.
 
     Args:
         question (str): The question to generate a SQL query for.
-        model (T5ForConditionalGeneration): The model to use.
+        model: The model to use.
         tokenizer: The tokenizer associated with the model.
         device: The device on which to perform the generation.
 
@@ -329,7 +327,7 @@ def generate_sql_query(question: str, model: T5ForConditionalGeneration, tokeniz
     return generated_sql
 
 
-def generate_multiple_sql_queries(model: T5ForConditionalGeneration, questions: list) -> list:
+def generate_multiple_sql_queries(model, questions: list) -> list:
     sql_queries = []
     for question in questions:
         sql_queries.append(generate_sql_query(question, model))

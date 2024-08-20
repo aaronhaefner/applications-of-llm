@@ -66,7 +66,6 @@ def train_model(tokenizer, model, device: torch.device,
         num_train_epochs=epochs,
         weight_decay=weight_decay,
         push_to_hub=push_to_hub,
-        fp16=True  # Enable mixed precision for faster training
     )
 
     trainer = Trainer(

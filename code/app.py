@@ -48,12 +48,7 @@ def train_flan_t5(model_size: str = "small",
     model_save_name = f"flan-t5-{model_size}-text2sql"
     dataset_name = "philikai/200k-Text2SQL"
 
-    # tokenizer = T5Tokenizer.from_pretrained(model_name)
-    # model = T5ForConditionalGeneration.from_pretrained(model_name).to(device)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
-
-    # Load and process the datasets
+    tokenizer, model = load_tokenizer_model(model_name, device)
     train_dataset, test_dataset = load_train_test(dataset_name,
         max_train_samples=max_train_samples, max_test_samples=max_test_samples)
 
@@ -70,13 +65,12 @@ def paraphrase_sql_questions():
     model_name = "google/flan-t5-base"
     model_type = "T5"
     model_save_name = "flan-t5-base-paraphrase"
-    dataset_name = "philikai/200k-Text2SQL"
+    # dataset_name = "philikai/200k-Text2SQL"
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
-
-    # Load and process the datasets
+    tokenizer, model = load_tokenizer_model(model_name, device)
     train_dataset, test_dataset = load_train_test(dataset_name)
+
+    # Prepare datasets
     tokenized_train_dataset, tokenized_test_dataset = process_tokenizer(
         tokenizer, 
         train_dataset, 
@@ -111,6 +105,17 @@ def text_to_sql():
     # INFO:root:Generated SQL Query: NPIs_state_name = 'California'd
 
 if __name__ == '__main__':
-    # paraphrase_sql_questions()
-    train_flan_t5()
-    # text_to_sql()
+    # capture argument
+    if len(sys.argv) > 1:
+        func_to_run = sys.argv[1]
+    else:
+        func_to_run = "flan"
+    
+    if func_to_run == "flan":
+        train_flan_t5()
+    elif func_to_run == "paraphrase":
+        paraphrase_sql_questions()
+    elif func_to_run == "text2sql":
+        text_to_sql()
+    else:
+        raise ValueError("Invalid function to run")

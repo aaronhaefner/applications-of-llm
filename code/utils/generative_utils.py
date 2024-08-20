@@ -2,10 +2,8 @@ import os
 import logging
 import torch
 import json
-from transformers import (T5Tokenizer,
-                          T5ForConditionalGeneration,
-                          TrainingArguments,
-                          Trainer)
+from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM,
+                          TrainingArguments, Trainer)
 from datasets import load_dataset
 from dotenv import load_dotenv
 from nltk.translate.bleu_score import sentence_bleu
@@ -14,7 +12,7 @@ load_dotenv()
 
 from utils.utils import log_generation_results
 from utils.globals import (MODEL_TYPE, MODEL_NAME, STRATEGY, HFTOKEN, SEED,
-    DATASET, MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID)
+MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID)
 
 
 def generate_text(prompt: str,
@@ -105,7 +103,7 @@ def generate_sql_query(question: str,
 
     Args:
         question (str): The question to generate a SQL query for.
-        model (T5ForConditionalGeneration): The model to use.
+        model: The model to use.
         tokenizer: The tokenizer associated with the model.
         device: The device on which to perform the generation.
 
@@ -133,7 +131,7 @@ def generate_multiple_sql_queries(model, questions: list) -> list:
     Generate SQL queries for multiple questions.
 
     Args:
-        model (T5ForConditionalGeneration): The model to use.
+        model: The model to use.
         questions (list): A list of questions to generate SQL queries for.
 
     Returns:
