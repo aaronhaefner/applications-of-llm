@@ -20,6 +20,49 @@ HEALTH_DATASET = "Nicolybgs/healthcare_data"
 EXAMPLES = "../input/question_query.json"
 MODEL_ID = "PASS"
 
+def train_flan_t5_base():
+    """
+    Train the Flan T5 base model on a SQL question-answer dataset.
+
+    Args:
+        None
+
+    Returns: None
+    """
+
+    prefs = {
+        'epochs': 1,
+        'learning_rate': 2e-5,
+        'per_device_train_batch_size': 4,
+        'per_device_eval_batch_size': 4,
+        'weight_decay': 0.01,
+    }
+    device = set_device()
+    model_name = "google/flan-t5-base"
+    model_type = "T5"
+    model_save_name = "t5_flan_txt2sql"
+
+    # tokenizer = T5Tokenizer.from_pretrained(model_name)
+    # model = T5ForConditionalGeneration.from_pretrained(model_name).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
+    dataset_name = "philikai/200k-Text2SQL"
+
+    # Load and process the datasets
+    train_dataset, test_dataset = load_train_test(dataset_name)
+    tokenized_train_dataset, tokenized_test_dataset = process_tokenizer(
+        tokenizer, 
+        train_dataset, 
+        test_dataset, 
+        model_type=model_type
+    )
+
+    # Train the model using the tokenized datasets
+    first_stage_training(tokenizer, model, device, 
+                         tokenized_train_dataset, tokenized_test_dataset,
+                         model_save_name)
+
+
 def paraphrase_sql_questions():
     device = set_device()
     model_name = "google/flan-t5-base"
