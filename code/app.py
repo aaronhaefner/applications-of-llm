@@ -45,12 +45,13 @@ def train_flan_t5(model_size: str = "small",
     device = set_device()
     model_name = f"google/flan-t5-{model_size}"
     model_type = "T5"
+    model_save_name = f"flan-t5-{model_size}-text2sql"
+    dataset_name = "philikai/200k-Text2SQL"
 
     # tokenizer = T5Tokenizer.from_pretrained(model_name)
     # model = T5ForConditionalGeneration.from_pretrained(model_name).to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
-    dataset_name = "philikai/200k-Text2SQL"
 
     # Load and process the datasets
     train_dataset, test_dataset = load_train_test(dataset_name,
@@ -69,10 +70,10 @@ def paraphrase_sql_questions():
     model_name = "google/flan-t5-base"
     model_type = "T5"
     model_save_name = "flan-t5-base-paraphrase"
+    dataset_name = "philikai/200k-Text2SQL"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
-    dataset_name = "philikai/200k-Text2SQL"
 
     # Load and process the datasets
     train_dataset, test_dataset = load_train_test(dataset_name)
