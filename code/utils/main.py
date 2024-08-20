@@ -1,8 +1,6 @@
 import logging
 import torch
 from transformers import (TrainingArguments, Trainer)
-from torch.profiler import profile, ProfilerActivity, tensorboard_trace_handler
-
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -21,9 +19,10 @@ def unpack_prefs(prefs: dict) -> dict:
     per_device_train_batch_size = prefs['per_device_train_batch_size']
     per_device_eval_batch_size = prefs.get('per_device_eval_batch_size', None)
     weight_decay = prefs['weight_decay']
+    dataset_name = prefs['dataset_name']
 
     return (epochs, learning_rate, per_device_train_batch_size,
-            per_device_eval_batch_size, weight_decay)
+            per_device_eval_batch_size, weight_decay, dataset_name)
 
 
 def train_model(tokenizer, model, device: torch.device, 
@@ -48,7 +47,7 @@ def train_model(tokenizer, model, device: torch.device,
     Returns: None
     """
     epochs, learning_rate, per_device_train_batch_size, \
-    per_device_eval_batch_size, weight_decay = unpack_prefs(prefs)
+        per_device_eval_batch_size, weight_decay, _ = unpack_prefs(prefs)
 
     # Set output directories based on training stage
     output_dir = "./results_fine_tuning" if fine_tune else "./results"
@@ -76,19 +75,7 @@ def train_model(tokenizer, model, device: torch.device,
         tokenizer=tokenizer
     )
 
-    # Profiler setup
-    with profile(
-        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-        schedule=torch.profiler.schedule(
-            wait=1, warmup=1,
-            active=3, repeat=1),
-        on_trace_ready=tensorboard_trace_handler("./log_dir"),
-        record_shapes=True,
-        profile_memory=True,
-        with_stack=True
-    ) as prof:
-        trainer.train()  # Start training
-        prof.step()  # Step profiler at each iteration
+    trainer.train()
 
     if push_to_hub:
         trainer.push_to_hub()
@@ -100,4 +87,3 @@ def train_model(tokenizer, model, device: torch.device,
         logging.info(f"{'Fine-tuning' if fine_tune else 'Training'} completed and model saved as {save_name}")
     else:
         logging.info(f"{'Fine-tuning' if fine_tune else 'Training'} completed, model not saved")
-
