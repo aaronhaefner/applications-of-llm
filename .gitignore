@@ -8,6 +8,6 @@ code/__pycache__/*
 code/utils/__pycache__/*
 *.out
 code/results/*
-input/paraphrased_examples.json
+input/paraphrase*
 code/flan*
 code/logs

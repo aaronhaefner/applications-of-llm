@@ -1,16 +1,71 @@
-# Setup
+# Text-to-sql language model with domain-specific fine-tuning layer
 import sys
+import json
+from utils.utils import set_device, load_tokenizer_model
 from utils.main import train_model_pipeline
-
 from dotenv import load_dotenv
 load_dotenv()
 
+SAVE_MODEL = True
+
+def paraphrase(model, tokenizer, device, text, num_return_sequences=5, num_beams=5):
+    """
+    Generate paraphrases for a given text.
+    """
+    inputs = tokenizer(text, truncation=True, padding='longest', return_tensors="pt").to(device)
+    outputs = model.generate(
+        **inputs,
+        max_length=60,
+        num_beams=num_beams,
+        num_return_sequences=num_return_sequences,
+    )
+    return [tokenizer.decode(
+        output, skip_special_tokens=True, clean_up_tokenization_spaces=True
+        ) for output in outputs]
+
+
+def extend_training_data(model_name: str, json_file: str):
+    """
+    """
+    device = set_device()
+    tokenizer, model = load_tokenizer_model(model_name, device)
+    with open(json_file, "r") as file:
+        data = json.load(file)
+    
+    paraphrased_data = []
+
+    for entry in data:
+        question = entry["question"]
+        answer = entry["answer"]
+        
+        paraphrases = paraphrase(
+            model, tokenizer, device, question, num_return_sequences=5)
+        
+        paraphrased_data.append({
+            "question": question,
+            "answer": answer
+        })
+        
+        for para in paraphrases:
+            paraphrased_data.append({
+                "question": para,
+                "answer": answer
+            })
+    
+    with open("../input/paraphrased_question_answer.json", "w") as outfile:
+        json.dump(paraphrased_data, outfile, indent=4)
+    
+    print(f"Original dataset size: {len(data)}")
+    print(f"Paraphrased dataset size: {len(paraphrased_data)}")
+
+    
 
 if __name__ == '__main__':
-    # Default training preferences
+    arg = sys.argv[1]
+    # Set training preferences
     sql_prefs = {
-        'epochs': 1,
-        'learning_rate': 2e-5,
+        'epochs': 2,
+        'learning_rate': 1e-6,
         'per_device_train_batch_size': 8,
         'per_device_eval_batch_size': 8,
         'weight_decay': 0.01,
@@ -18,48 +73,34 @@ if __name__ == '__main__':
 
     health_prefs = {
         'epochs': 3,
-        'learning_rate': 2e-5,
+        'learning_rate': 1e-6,
         'per_device_train_batch_size': 1,
         'per_device_eval_batch_size': 1,
         'weight_decay': 0.01,
     }
 
-    # Determine which model to train based on command-line argument
-    if len(sys.argv) > 1:
-        func_to_run = sys.argv[1]
-    else:
-        func_to_run = "sql"
-
-    if func_to_run == "sql":
-        train_model_pipeline(model_size="base",
-                             dataset_source="huggingface",
-                             dataset_identifier="philikai/200k-Text2SQL",
-                             model_save_name="flan-t5-base-sql",
-                             prefs=sql_prefs,
-                             max_train_samples=5000,
-                             max_test_samples=1000)
-    elif func_to_run == "health":
-        train_model_pipeline(model_size="base",
-                             dataset_source="local",
-                             dataset_identifier="../input/question_answer.json",
-                             model_save_name="flan-t5-base-paraphrase",
-                             prefs=health_prefs)
-    elif func_to_run == "twostep":
+    if arg == "train":
         # First step: Train on SQL data
-        train_model_pipeline(model_size="base",
-                             dataset_source="huggingface",
-                             dataset_identifier="philikai/200k-Text2SQL",
-                             model_save_name="flan-t5-base-sql",
-                             prefs=sql_prefs,
-                             max_train_samples=500,
-                             max_test_samples=100)
+        train_model_pipeline(
+            model_size="base", dataset_source="huggingface",
+            dataset_identifier="philikai/200k-Text2SQL",
+            model_save_name="flan-t5-base-sql",
+            save_model=SAVE_MODEL, prefs=sql_prefs,
+            max_train_samples=500, max_test_samples=100,
+            load_pretrained_model=None)
 
         # Second step: Load the SQL-trained model and train on health data
-        train_model_pipeline(model_size="base",
-                             dataset_source="local",
-                             dataset_identifier="../input/question_answer.json",
-                             model_save_name="flan-t5-base-twostep",
-                             prefs=health_prefs,
-                             load_pretrained_model="flan-t5-base-sql")
+        train_model_pipeline(
+            model_size="base", dataset_source="local",
+            dataset_identifier="../input/question_answer.json",
+            model_save_name="flan-t5-health-finetuned",
+            save_model=SAVE_MODEL, prefs=health_prefs,
+            load_pretrained_model="flan-t5-base-sql")
+    # Use the model to generate paraphrases
+    elif arg == "paraphrase":
+        extend_training_data(
+            model_name="flan-t5-health-finetuned",
+            json_file="../input/question_answer.json")
     else:
-        raise ValueError("Invalid function to run")
+        print("Invalid argument. Provide 'paraphrase' or 'train' as argument.")
+        sys.exit(1)
