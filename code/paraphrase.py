@@ -17,8 +17,6 @@ def paraphrase(text, model, tokenizer, num_return_sequences=5, num_beams=5):
         max_length=60,
         num_beams=num_beams,
         num_return_sequences=num_return_sequences,
-        temperature=1.5,
-        do_sample=True  # Enable sampling to use temperature
     )
     return [tokenizer.decode(output, skip_special_tokens=True, clean_up_tokenization_spaces=True) for output in outputs]
 

@@ -4,16 +4,13 @@ import torch
 import json
 from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM,
                           TrainingArguments, Trainer)
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 from dotenv import load_dotenv
 from nltk.translate.bleu_score import sentence_bleu
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
-from utils.globals import (
-    MODEL_TYPE, MODEL_NAME, STRATEGY, HFTOKEN, SEED,
-    MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID
-)
+from utils.globals import (MODEL_TYPE, STRATEGY, HFTOKEN, HUB_MODEL_ID)
 
 # Configure logging
 log_file_path = f"{MODEL_TYPE}_training.log"
@@ -71,17 +68,20 @@ def load_tokenizer_model(model_name: str, device: torch.device) -> tuple:
     return tokenizer, model
 
 
-# Load and preprocess dataset
-def load_train_test(dataset_name: str,
-                    seed: int = 42,
-                    max_train_samples: int = None,
-                    max_test_samples: int = None,
-                    test_size: float = 0.2) -> tuple:
+# Load and split the dataset
+def load_and_split_dataset(source: str,
+                           dataset_identifier: str,
+                           seed: int = 42,
+                           max_train_samples: int = None,
+                           max_test_samples: int = None,
+                           test_size: float = 0.2) -> tuple:
     """
-    Load dataset from Hugging Face and split into train and test sets.
+    Load a dataset from a specified source (Hugging Face or local JSON file) and split into train and test sets.
 
     Args:
-        dataset_name (str): The dataset name to load.
+        source (str): The source of the dataset ('huggingface' or 'local').
+        dataset_identifier (str): The dataset name to load if source is 'huggingface', 
+                                  or the path to the JSON file if source is 'local'.
         seed (int): The random seed to use for shuffling.
         max_train_samples (int): The maximum number of samples for training.
         max_test_samples (int): The maximum number of samples for testing.
@@ -90,18 +90,24 @@ def load_train_test(dataset_name: str,
     Returns:
         tuple: The train and test datasets.
     """
-    data = load_dataset(dataset_name,
-                        split="train").train_test_split(test_size=test_size)
-    train_dataset = data["train"].shuffle(seed=seed)
+    if source == 'huggingface':
+        dataset = load_dataset(dataset_identifier, split="train").train_test_split(test_size=test_size, seed=seed)
+    elif source == 'local':
+        with open(dataset_identifier, 'r') as f:
+            data = json.load(f)
+        dataset = Dataset.from_list(data).train_test_split(test_size=test_size, seed=seed)
+    else:
+        raise ValueError("Source must be either 'huggingface' or 'local'")
+
+    train_dataset = dataset["train"].shuffle(seed=seed)
     if max_train_samples:
         train_dataset = train_dataset.select(range(max_train_samples))
 
-    test_dataset = data["test"].shuffle(seed=seed)
+    test_dataset = dataset["test"].shuffle(seed=seed)
     if max_test_samples:
         test_dataset = test_dataset.select(range(max_test_samples))
 
     return train_dataset, test_dataset
-
 
 def preprocess_function(examples_to_encode: dict,
                         tokenizer, model_type: str = "T5") -> dict:
