@@ -6,13 +6,14 @@ from utils.main import train_model_pipeline
 from dotenv import load_dotenv
 load_dotenv()
 
-SAVE_MODEL = True
 
-def paraphrase(model, tokenizer, device, text, num_return_sequences=5, num_beams=5):
+def paraphrase(model, tokenizer, device,
+               text, num_return_sequences=5, num_beams=5):
     """
     Generate paraphrases for a given text.
     """
-    inputs = tokenizer(text, truncation=True, padding='longest', return_tensors="pt").to(device)
+    inputs = tokenizer(text, truncation=True, padding='longest',
+                       return_tensors="pt").to(device)
     outputs = model.generate(
         **inputs,
         max_length=60,
@@ -61,8 +62,17 @@ def extend_training_data(model_name: str, json_file: str):
     
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Provide 'paraphrase' or 'train' as argument.")
+        sys.exit(1)
     arg = sys.argv[1]
+
     # Set training preferences
+    max_train_samples = 5000
+    max_test_samples = 1000
+    scaling_factor = 10
+    SAVE_MODEL = False
+    
     sql_prefs = {
         'epochs': 2,
         'learning_rate': 1e-6,
@@ -78,15 +88,31 @@ if __name__ == '__main__':
         'per_device_eval_batch_size': 1,
         'weight_decay': 0.01,
     }
+    if SAVE_MODEL:
+        print("WARNING: SAVE_MODEL is set to True. This will save the model.")
+        confirm = input("Do you want to continue? (y/n): ")
+        if confirm.lower() != "y":
+            sys.exit(0)
+    if arg == "none":
+        train_model_pipeline(
+            model_size="base", dataset_source="huggingface",
+            dataset_identifier="philikai/200k-Text2SQL",
+            model_save_name="flan-t5-base-sql",
+            save_model=False, prefs=sql_prefs,
+            max_train_samples=(max_train_samples // scaling_factor),
+            max_test_samples=(max_test_samples // scaling_factor),
+            load_pretrained_model=None)
+        sys.exit(0)
 
-    if arg == "train":
+    elif arg == "train":
         # First step: Train on SQL data
         train_model_pipeline(
             model_size="base", dataset_source="huggingface",
             dataset_identifier="philikai/200k-Text2SQL",
             model_save_name="flan-t5-base-sql",
             save_model=SAVE_MODEL, prefs=sql_prefs,
-            max_train_samples=500, max_test_samples=100,
+            max_train_samples=max_train_samples,
+            max_test_samples=max_test_samples,
             load_pretrained_model=None)
 
         # Second step: Load the SQL-trained model and train on health data
@@ -101,6 +127,4 @@ if __name__ == '__main__':
         extend_training_data(
             model_name="flan-t5-health-finetuned",
             json_file="../input/question_answer.json")
-    else:
-        print("Invalid argument. Provide 'paraphrase' or 'train' as argument.")
-        sys.exit(1)
+

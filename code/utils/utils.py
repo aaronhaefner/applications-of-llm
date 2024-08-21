@@ -2,24 +2,23 @@ import os
 import logging
 import torch
 import json
-from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM,
-                          TrainingArguments, Trainer)
+from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM)
 from datasets import load_dataset, Dataset
 from dotenv import load_dotenv
-from nltk.translate.bleu_score import sentence_bleu
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
-from utils.globals import (MODEL_TYPE, STRATEGY, HFTOKEN, HUB_MODEL_ID)
+from utils.globals import (HFTOKEN)
 
 # Configure logging
-log_file_path = f"{MODEL_TYPE}_training.log"
+log_file_path = f"t5_training.log"
 logging.basicConfig(
     filename=log_file_path,
     filemode='a',
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
 
 def log_generation_results(generated_sql: str, expected_sql: str):
     logging.info(f"Generated SQL: {generated_sql}")
@@ -76,12 +75,13 @@ def load_and_split_dataset(source: str,
                            max_test_samples: int = None,
                            test_size: float = 0.2) -> tuple:
     """
-    Load a dataset from a specified source (Hugging Face or local JSON file) and split into train and test sets.
+    Load a dataset from a specified source (Hugging Face or local JSON file) 
+    and split into train and test sets.
 
     Args:
         source (str): The source of the dataset ('huggingface' or 'local').
-        dataset_identifier (str): The dataset name to load if source is 'huggingface', 
-                                  or the path to the JSON file if source is 'local'.
+        dataset_identifier (str): The dataset name to load if 'huggingface', 
+                                  or the path to the JSON file if 'local'.
         seed (int): The random seed to use for shuffling.
         max_train_samples (int): The maximum number of samples for training.
         max_test_samples (int): The maximum number of samples for testing.
@@ -91,11 +91,16 @@ def load_and_split_dataset(source: str,
         tuple: The train and test datasets.
     """
     if source == 'huggingface':
-        dataset = load_dataset(dataset_identifier, split="train").train_test_split(test_size=test_size, seed=seed)
+        dataset = load_dataset(
+            dataset_identifier,
+            split="train").train_test_split(test_size=test_size, seed=seed)
+
     elif source == 'local':
         with open(dataset_identifier, 'r') as f:
             data = json.load(f)
-        dataset = Dataset.from_list(data).train_test_split(test_size=test_size, seed=seed)
+        dataset = Dataset.from_list(data).train_test_split(
+            test_size=test_size, seed=seed)
+
     else:
         raise ValueError("Source must be either 'huggingface' or 'local'")
 
@@ -109,6 +114,7 @@ def load_and_split_dataset(source: str,
 
     return train_dataset, test_dataset
 
+
 def preprocess_function(examples_to_encode: dict, tokenizer) -> dict:
     """
     Encode the input and target columns using the tokenizer.
@@ -120,7 +126,7 @@ def preprocess_function(examples_to_encode: dict, tokenizer) -> dict:
     Returns:
         dict: The encoded input and target columns.
     """
-    inputs = examples_to_encode["question"]  # input column
+    inputs = examples_to_encode["instruction_system_prompt"]  # input column
     targets = examples_to_encode["answer"]  # target column
 
     inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
@@ -132,6 +138,7 @@ def preprocess_function(examples_to_encode: dict, tokenizer) -> dict:
         "input_ids": inputs_encoded.input_ids.squeeze(0),
         "labels": targets_encoded.input_ids.squeeze(0)
     }
+
 
 def process_tokenizer(tokenizer,
                       train_dataset: dict,
@@ -157,12 +164,26 @@ def process_tokenizer(tokenizer,
 
 
 # Make model contiguous
-def make_model_contiguous(model):
+def make_model_contiguous(model) -> None:
+    """
+    Make the model parameters contiguous in memory.
+
+    Args:
+        model: The model to make contiguous
+    
+    Returns: None
+    """
     for param in model.parameters():
         param.data = param.data.contiguous()
 
 
-def set_device():
+def set_device() -> torch.device:
+    """
+    Set the device to use for training based on availability.
+
+    Returns:
+        torch.device: The device to use.
+    """
     if torch.cuda.is_available():
         device = torch.device("cuda")
     elif torch.backends.mps.is_available():
@@ -171,190 +192,3 @@ def set_device():
         device = torch.device("cpu")
     print("Device:", device)
     return device
-
-def set_training_args(push_to_hub: bool=False):
-    training_args = TrainingArguments(
-        output_dir="output",
-        logging_dir=os.path.dirname(log_file_path),
-        logging_strategy=STRATEGY,
-        logging_steps=100,
-        learning_rate=2e-5,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
-        num_train_epochs=2,
-        weight_decay=0.01,
-        eval_strategy=STRATEGY,
-        eval_steps=100,
-        save_strategy=STRATEGY,
-        push_to_hub=push_to_hub,
-        hub_model_id=HUB_MODEL_ID,
-        hub_token=HFTOKEN,
-        remove_unused_columns=False,
-        gradient_accumulation_steps=2,
-        max_grad_norm=1.0,
-        load_best_model_at_end=True,
-        save_total_limit=1,
-        metric_for_best_model="eval_loss",
-        greater_is_better=False,
-    )
-    return training_args    
-
-
-def set_trainer(model, training_args, train_dataset, test_dataset, tokenizer):
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_dataset,
-        eval_dataset=test_dataset,
-        tokenizer=tokenizer,
-    )
-    return trainer
-
-
-def generate_text(prompt: str,
-                  model,
-                  tokenizer,
-                  device, num: int = 1, max_length: int = 100) -> list:
-    """
-    Generate text based on the given prompt.
-
-    Args:
-        prompt (str): The input text prompt.
-        model: The model to use.
-        tokenizer: The tokenizer associated with the model.
-        device: The device on which to perform the generation.
-        num (int): Number of generated sequences. Default is 1.
-        max_length (int): The maximum length of the generated sequences. Default is 100.
-
-    Returns:
-        list: A list of generated texts.
-    """
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
-
-    outputs = model.generate(
-        **inputs, max_length=max_length,
-        num_return_sequences=num, do_sample=True)
-
-    return [tokenizer.decode(output,
-                             skip_special_tokens=True) for output in outputs]
-
-
-def generate_questions(model, tokenizer, device, num: int = 1) -> list:
-    """
-    Generate SQL questions.
-
-    Args:
-        model: The model to use.
-        tokenizer: The tokenizer associated with the model.
-        device: The device on which to perform the generation.
-        num (int): Number of questions to generate. Default is 1.
-
-    Returns:
-        list: A list of generated SQL questions.
-    """
-    prompt = "Generate a SQL question that \
-        could be used in a typical database query."
-    return generate_text(prompt, model, tokenizer, device, num)
-
-
-def generate_sql_query(question: str,
-                       model,
-                       tokenizer,
-                       device: torch.device,
-                       schema_path: str = "../input/schema.json") -> str:
-    """
-    Generate a SQL query given a question and schema.
-
-    Args:
-        question (str): The question to generate a SQL query for.
-        model: The model to use.
-        tokenizer: The tokenizer associated with the model.
-        device: The device on which to perform the generation.
-        schema_path (str): Path to the JSON schema file.
-
-    Returns:
-        str: The generated SQL query.
-    """
-    prompt = (
-        f"Generate a SQL query that answers the following question:\n{question}"
-    )
-    return generate_text(prompt, model, tokenizer, device)[0]
-
-
-def generate_multiple_questions(model, schema: dict, num_examples: int = 5) -> list:
-    questions = []
-    for _ in range(num_examples):
-        questions.append(generate_question(model, schema))
-    return questions
-
-
-def generate_sql_query(question: str, model, tokenizer, device) -> str:
-    """
-    Generate a SQL query given a question.
-
-    Args:
-        question (str): The question to generate a SQL query for.
-        model: The model to use.
-        tokenizer: The tokenizer associated with the model.
-        device: The device on which to perform the generation.
-
-    Returns:
-        str: The generated SQL query.
-    """
-    prompt = f"Given the question: {question}\nGenerate the corresponding SQL query."
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
-    
-    # Generate the output
-    outputs = model.generate(**inputs, max_length=100, num_return_sequences=1, do_sample=True)
-    
-    # Decode the output to get the generated SQL query
-    generated_sql = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    return generated_sql
-
-
-def generate_multiple_sql_queries(model, questions: list) -> list:
-    sql_queries = []
-    for question in questions:
-        sql_queries.append(generate_sql_query(question, model))
-    return sql_queries
-
-
-def evaluate_generated_sql(generated_sql: str, expected_sql: str) -> dict:
-    """
-    Evaluate the generated SQL query against the expected SQL query.
-
-    Args:
-        generated_sql (str): The generated SQL query.
-        expected_sql (str): The expected SQL query.
-    
-    Returns:
-        dict: A dictionary containing match status and BLEU score.
-    """
-    match = generated_sql.strip() == expected_sql.strip()
-    bleu_score = compute_bleu_score(generated_sql, expected_sql)
-    return {"match": match, "bleu_score": bleu_score}
-
-def compute_bleu_score(generated_sql: str, reference_sql: str) -> float:
-    """
-    Compute the BLEU score for the 
-    generated SQL query against the reference SQL query.
-
-    Args:
-        generated_sql (str): The generated SQL query.
-        reference_sql (str): The reference SQL query.
-
-    Returns:
-        float: The BLEU score.
-    """
-    reference = [reference_sql.split()]
-    candidate = generated_sql.split()
-    return sentence_bleu(reference, candidate)
-
-def evaluate_batch(generated_sqls: list, expected_sqls: list) -> list:
-    results = []
-    for generated_sql, expected_sql in zip(generated_sqls, expected_sqls):
-        result = evaluate_generated_sql(generated_sql, expected_sql)
-        results.append(result)
-        log_generation_results(generated_sql, expected_sql)
-    return results
