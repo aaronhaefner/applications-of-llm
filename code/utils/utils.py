@@ -109,15 +109,13 @@ def load_and_split_dataset(source: str,
 
     return train_dataset, test_dataset
 
-def preprocess_function(examples_to_encode: dict,
-                        tokenizer, model_type: str = "T5") -> dict:
+def preprocess_function(examples_to_encode: dict, tokenizer) -> dict:
     """
     Encode the input and target columns using the tokenizer.
 
     Args:
         examples_to_encode (dict): The input examples to encode.
         tokenizer: The tokenizer to use.
-        model_type (str): The model type ("T5", "PEGASUS", etc.).
 
     Returns:
         dict: The encoded input and target columns.
@@ -125,20 +123,9 @@ def preprocess_function(examples_to_encode: dict,
     inputs = examples_to_encode["question"]  # input column
     targets = examples_to_encode["answer"]  # target column
 
-    if model_type == "T5":
-        inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
+    inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
                                    padding="max_length", return_tensors="pt")
-        targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
-                                    padding="max_length", return_tensors="pt")
-    elif model_type == "PEGASUS":
-        inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
-                                   padding="longest", return_tensors="pt")
-        targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
-                                    padding="longest", return_tensors="pt")
-    else:
-        inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
-                                   padding="max_length", return_tensors="pt")
-        targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
+    targets_encoded = tokenizer(targets, max_length=512, truncation=True, 
                                     padding="max_length", return_tensors="pt")
 
     return {
@@ -148,8 +135,7 @@ def preprocess_function(examples_to_encode: dict,
 
 def process_tokenizer(tokenizer,
                       train_dataset: dict,
-                      test_dataset: dict,
-                      model_type: str = "T5") -> tuple:
+                      test_dataset: dict) -> tuple:
     """
     Tokenize the train and test datasets.
 
@@ -157,19 +143,16 @@ def process_tokenizer(tokenizer,
         tokenizer: The tokenizer to use.
         train_dataset (dict): The training dataset.
         test_dataset (dict): The testing dataset.
-        model_type (str): The model type ("T5", "PEGASUS", etc.).
 
     Returns:
         tuple: The tokenized train and test datasets.
     """
     tokenized_train_dataset = train_dataset.map(
-        lambda examples: preprocess_function(
-            examples, tokenizer, model_type),
-            batched=True, remove_columns= train_dataset.column_names)
+        lambda examples: preprocess_function(examples, tokenizer),
+        batched=True, remove_columns= train_dataset.column_names)
     tokenized_test_dataset = test_dataset.map(
-        lambda examples: preprocess_function(
-            examples,tokenizer, model_type),
-            batched=True, remove_columns=test_dataset.column_names)
+        lambda examples: preprocess_function(examples, tokenizer),
+        batched=True, remove_columns=test_dataset.column_names)
     return tokenized_train_dataset, tokenized_test_dataset
 
 
@@ -208,14 +191,11 @@ def set_training_args(push_to_hub: bool=False):
         hub_token=HFTOKEN,
         remove_unused_columns=False,
         gradient_accumulation_steps=2,
-        fp16=False,  # Consider enabling later
         max_grad_norm=1.0,
         load_best_model_at_end=True,
         save_total_limit=1,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
-        # Added for distributed training
-        # deepspeed=False,  # Set this to a config file path if using DeepSpeed
     )
     return training_args    
 

@@ -100,6 +100,7 @@ def train_model_pipeline(model_size: str,
                          dataset_source: str,
                          dataset_identifier: str,
                          model_save_name: str,
+                         save_model: bool,
                          prefs: dict,
                          max_train_samples: int = None,
                          max_test_samples: int = None,
@@ -112,6 +113,7 @@ def train_model_pipeline(model_size: str,
         dataset_source (str): Source of the dataset ('huggingface' or 'local').
         dataset_identifier (str): The dataset name or local path.
         model_save_name (str): Name to save the trained model.
+        save_model (bool): Whether to save the model.
         prefs (dict): Training preferences such as epochs, learning rate, etc.
         max_train_samples (int, optional): Maximum number of training samples.
         max_test_samples (int, optional): Maximum number of testing samples.
@@ -121,8 +123,9 @@ def train_model_pipeline(model_size: str,
         None
     """
     device = set_device()
-    model_name = f"google/flan-t5-{model_size}" if not load_pretrained_model else load_pretrained_model
-    model_type = "T5"
+    model_name = (
+        f"google/flan-t5-{model_size}" 
+        if not load_pretrained_model else load_pretrained_model)
 
     tokenizer, model = load_tokenizer_model(model_name, device)
     train_dataset, test_dataset = load_and_split_dataset(
@@ -130,9 +133,9 @@ def train_model_pipeline(model_size: str,
         max_train_samples=max_train_samples, max_test_samples=max_test_samples)
 
     tokenized_train_dataset, tokenized_test_dataset = process_tokenizer(
-        tokenizer, train_dataset, test_dataset, model_type=model_type)
+        tokenizer, train_dataset, test_dataset)
 
     # Train the model
     train_model(tokenizer, model, device, prefs,
                 tokenized_train_dataset, tokenized_test_dataset,
-                model_save_name, save_model=False)
+                model_save_name, save_model=save_model)
