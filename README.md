@@ -1,5 +1,7 @@
 # Applications of LLMs
 
+**Development in progess...**
+
 ## Overview
 
 This repository contains tools and functions leveraging pre-trained Large Language Models (LLMs) for various applications in healthcare and finance. The current focus is on generating and understanding SQL queries from natural language, with plans to expand into other domains.
