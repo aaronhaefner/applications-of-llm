@@ -32,7 +32,7 @@ def unpack_prefs(prefs: dict) -> dict:
 
 def train_model(tokenizer, model, device: torch.device, 
                 prefs: dict, train_dataset, eval_dataset=None,
-                save_name: str=None, save_model: bool=False,
+                model_save_name: str=None, save_model: bool=False,
                 push_to_hub: bool=False, fine_tune: bool=False) -> None:
     """
     Train or fine-tune the model on the given dataset.
@@ -44,21 +44,20 @@ def train_model(tokenizer, model, device: torch.device,
         prefs (dict): The preferences dictionary.
         train_dataset: The training dataset.
         eval_dataset: The evaluation dataset.
-        save_name (str): The name to save the model as.
+        model_save_name (str): The name to save the model as.
         save_model (bool): Whether to save the model.
         push_to_hub (bool): Whether to push the model to the Hugging Face Hub.
         fine_tune (bool): Whether to fine-tune the model.
     
     Returns: None
     """
-    # add gradient accumukation step arg to prefs and unpack fx
+    # Unpack preferences
     epochs, learning_rate, per_device_train_batch_size, \
         per_device_eval_batch_size, weight_decay, strategy, \
         grad_acc_steps = unpack_prefs(prefs)
 
-    # Set output directories based on training stage
-    output_dir = "./results_fine_tuning" if fine_tune else "./results"
-    logging_dir = "./logs_fine_tuning" if fine_tune else "./logs"
+    output_dir = f"./{model_save_name}_fine_tuning" if fine_tune else f"./{model_save_name}"
+    logging_dir = f"./logs_{model_save_name}_fine_tuning" if fine_tune else f"./logs_{model_save_name}"
 
     training_args = TrainingArguments(
         output_dir=output_dir,
@@ -86,15 +85,15 @@ def train_model(tokenizer, model, device: torch.device,
     trainer.train()
 
     if push_to_hub:
-        trainer.push_to_hub()
+        trainer.push_to_hub(model_save_name)
 
     # Save the model and tokenizer
     if save_model:
-        model.save_pretrained(save_name)
-        tokenizer.save_pretrained(save_name)
+        model.save_pretrained(model_save_name)
+        tokenizer.save_pretrained(model_save_name)
         logging.info(
             f"{'Fine-tuning' if fine_tune else 'Training'} "
-            f"completed and model saved as {save_name}"
+            f"completed and model saved as {model_save_name}"
         )
     else:
         logging.info(

@@ -10,4 +10,4 @@ code/utils/__pycache__/*
 code/results/*
 input/paraphrase*
 code/flan*
-code/logs
+code/log*
