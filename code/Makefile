@@ -1,6 +1,6 @@
 # Variables
 VENV_DIR = venv
-REQUIREMENTS = requirements.txt
+REQUIREMENTS = ../requirements.txt
 PACKAGES = torch torchvision torchaudio transformers datasets ipython SentencePiece accelerate dotenv nltk
 PYTHON = python3
 APP_SCRIPT = app.py
