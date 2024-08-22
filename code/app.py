@@ -3,63 +3,10 @@ import sys
 import json
 from utils.utils import set_device, load_tokenizer_model
 from utils.main import train_model_pipeline
+from utils.generative_utils import paraphrase, extend_training_data
 from dotenv import load_dotenv
 load_dotenv()
 
-
-def paraphrase(model, tokenizer, device,
-               text, num_return_sequences=5, num_beams=5):
-    """
-    Generate paraphrases for a given text.
-    """
-    inputs = tokenizer(text, truncation=True, padding='longest',
-                       return_tensors="pt").to(device)
-    outputs = model.generate(
-        **inputs,
-        max_length=60,
-        num_beams=num_beams,
-        num_return_sequences=num_return_sequences,
-    )
-    return [tokenizer.decode(
-        output, skip_special_tokens=True, clean_up_tokenization_spaces=True
-        ) for output in outputs]
-
-
-def extend_training_data(model_name: str, json_file: str):
-    """
-    """
-    device = set_device()
-    tokenizer, model = load_tokenizer_model(model_name, device)
-    with open(json_file, "r") as file:
-        data = json.load(file)
-    
-    paraphrased_data = []
-
-    for entry in data:
-        question = entry["question"]
-        answer = entry["answer"]
-        
-        paraphrases = paraphrase(
-            model, tokenizer, device, question, num_return_sequences=5)
-        
-        paraphrased_data.append({
-            "question": question,
-            "answer": answer
-        })
-        
-        for para in paraphrases:
-            paraphrased_data.append({
-                "question": para,
-                "answer": answer
-            })
-    
-    with open("../input/paraphrased_question_answer.json", "w") as outfile:
-        json.dump(paraphrased_data, outfile, indent=4)
-    
-    print(f"Original dataset size: {len(data)}")
-    print(f"Paraphrased dataset size: {len(paraphrased_data)}")
-
-    
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

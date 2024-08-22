@@ -7,6 +7,7 @@ from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM,
 from datasets import load_dataset
 from dotenv import load_dotenv
 from nltk.translate.bleu_score import sentence_bleu
+from utils.utils import set_device, load_tokenizer_model
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
@@ -85,15 +86,6 @@ def generate_sql_query(question: str,
     return generate_text(prompt, model, tokenizer, device)[0]
 
 
-def generate_multiple_questions(model,
-                                schema: dict,
-                                num_examples: int = 5) -> list:
-    questions = []
-    for _ in range(num_examples):
-        questions.append(generate_question(model, schema))
-    return questions
-
-
 def generate_sql_query(question: str,
                        model,
                        tokenizer,
@@ -141,6 +133,59 @@ def generate_multiple_sql_queries(model, questions: list) -> list:
     for question in questions:
         sql_queries.append(generate_sql_query(question, model))
     return sql_queries
+
+
+def paraphrase(model, tokenizer, device,
+               text, num_return_sequences=5, num_beams=5):
+    """
+    Generate paraphrases for a given text.
+    """
+    inputs = tokenizer(text, truncation=True, padding='longest',
+                       return_tensors="pt").to(device)
+    outputs = model.generate(
+        **inputs,
+        max_length=60,
+        num_beams=num_beams,
+        num_return_sequences=num_return_sequences,
+    )
+    return [tokenizer.decode(
+        output, skip_special_tokens=True, clean_up_tokenization_spaces=True
+        ) for output in outputs]
+
+
+def extend_training_data(model_name: str, json_file: str):
+    """
+    """
+    device = set_device()
+    tokenizer, model = load_tokenizer_model(model_name, device)
+    with open(json_file, "r") as file:
+        data = json.load(file)
+    
+    paraphrased_data = []
+
+    for entry in data:
+        question = entry["question"]
+        answer = entry["answer"]
+        
+        paraphrases = paraphrase(
+            model, tokenizer, device, question, num_return_sequences=5)
+        
+        paraphrased_data.append({
+            "question": question,
+            "answer": answer
+        })
+        
+        for para in paraphrases:
+            paraphrased_data.append({
+                "question": para,
+                "answer": answer
+            })
+    
+    with open("../input/paraphrased_question_answer.json", "w") as outfile:
+        json.dump(paraphrased_data, outfile, indent=4)
+    
+    print(f"Original dataset size: {len(data)}")
+    print(f"Paraphrased dataset size: {len(paraphrased_data)}")
 
 
 def evaluate_generated_sql(generated_sql: str, expected_sql: str) -> dict:
