@@ -1,3 +1,4 @@
+# General utils functions for data processing and model training.
 import os
 import logging
 import torch
@@ -18,13 +19,6 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
-
-def log_generation_results(generated_sql: str, expected_sql: str):
-    logging.info(f"Generated SQL: {generated_sql}")
-    logging.info(f"Expected SQL: {expected_sql}")
-    result = evaluate_generated_sql(generated_sql, expected_sql)
-    logging.info(f"Match: {result['match']},BLEU Score: {result['bleu_score']}")
 
 
 def load_schema(schema_file: str) -> dict:
