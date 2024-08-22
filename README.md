@@ -57,7 +57,7 @@ Use the expanded dataset to further fine-tune the model on healthcare-specific d
 
 ## Model on Hugging Face
 
-The fine-tuned model is available [here](https://huggingface.co/aaronhaefner/).
+The models are still being developed but metrics are available on [Hugging Face](https://huggingface.co/aaronhaefner/).
 
 ## Future Work
 
