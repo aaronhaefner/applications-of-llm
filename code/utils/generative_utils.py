@@ -11,11 +11,6 @@ from utils.utils import set_device, load_tokenizer_model
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
-from utils.utils import log_generation_results
-from utils.globals import (MODEL_TYPE, MODEL_NAME, STRATEGY, HFTOKEN, SEED,
-MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES, TEST_SIZE, HUB_MODEL_ID)
-
-
 def generate_text(prompt: str,
                   model,
                   tokenizer,
@@ -236,5 +231,5 @@ def evaluate_batch(generated_sqls: list, expected_sqls: list) -> list:
     for generated_sql, expected_sql in zip(generated_sqls, expected_sqls):
         result = evaluate_generated_sql(generated_sql, expected_sql)
         results.append(result)
-        log_generation_results(generated_sql, expected_sql)
+        # log_generation_results(generated_sql, expected_sql)
     return results
