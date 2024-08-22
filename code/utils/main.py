@@ -1,3 +1,4 @@
+# Main utils to train models flexibly
 import logging
 import torch
 from transformers import (TrainingArguments, Trainer)
@@ -21,9 +22,12 @@ def unpack_prefs(prefs: dict) -> dict:
     per_device_train_batch_size = prefs['per_device_train_batch_size']
     per_device_eval_batch_size = prefs['per_device_eval_batch_size']
     weight_decay = prefs['weight_decay']
+    strategy = prefs['strategy']
+    grad_acc_steps = prefs['gradient_accumulation_steps']
 
     return (epochs, learning_rate, per_device_train_batch_size,
-            per_device_eval_batch_size, weight_decay)
+            per_device_eval_batch_size, weight_decay, strategy,
+            grad_acc_steps)
 
 
 def train_model(tokenizer, model, device: torch.device, 
@@ -47,8 +51,10 @@ def train_model(tokenizer, model, device: torch.device,
     
     Returns: None
     """
+    # add gradient accumukation step arg to prefs and unpack fx
     epochs, learning_rate, per_device_train_batch_size, \
-        per_device_eval_batch_size, weight_decay = unpack_prefs(prefs)
+        per_device_eval_batch_size, weight_decay, strategy, \
+        grad_acc_steps = unpack_prefs(prefs)
 
     # Set output directories based on training stage
     output_dir = "./results_fine_tuning" if fine_tune else "./results"
@@ -57,15 +63,16 @@ def train_model(tokenizer, model, device: torch.device,
     training_args = TrainingArguments(
         output_dir=output_dir,
         logging_dir=logging_dir,
-        logging_strategy="steps",
+        logging_strategy=strategy,
         logging_steps=100,
-        eval_strategy="steps" if eval_dataset else "no",
+        eval_strategy=strategy if eval_dataset else "no",
         learning_rate=learning_rate,
         per_device_train_batch_size=per_device_train_batch_size,
         per_device_eval_batch_size=per_device_eval_batch_size,
         num_train_epochs=epochs,
         weight_decay=weight_decay,
         push_to_hub=push_to_hub,
+        gradient_accumulation_steps=grad_acc_steps,
     )
 
     trainer = Trainer(
@@ -104,7 +111,8 @@ def train_model_pipeline(model_size: str,
                          prefs: dict,
                          max_train_samples: int = None,
                          max_test_samples: int = None,
-                         load_pretrained_model: str = None) -> None:
+                         load_pretrained_model: str = None,
+                         push_to_hub: bool = False) -> None:
     """
     Generalized function to train or further train a T5 model on a given dataset.
 
@@ -118,6 +126,7 @@ def train_model_pipeline(model_size: str,
         max_train_samples (int, optional): Maximum number of training samples.
         max_test_samples (int, optional): Maximum number of testing samples.
         load_pretrained_model (str, optional): Path to a pre-trained model to load.
+        push_to_hub (bool): Whether to push the model to the Hugging Face Hub.
 
     Returns:
         None
@@ -138,4 +147,4 @@ def train_model_pipeline(model_size: str,
     # Train the model
     train_model(tokenizer, model, device, prefs,
                 tokenized_train_dataset, tokenized_test_dataset,
-                model_save_name, save_model=save_model)
+                model_save_name, save_model=save_model, push_to_hub=push_to_hub)

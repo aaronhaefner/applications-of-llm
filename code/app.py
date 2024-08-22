@@ -68,17 +68,19 @@ if __name__ == '__main__':
     arg = sys.argv[1]
 
     # Set training preferences
-    max_train_samples = 5000
-    max_test_samples = 1000
-    scaling_factor = 10
-    SAVE_MODEL = False
+    max_train_samples = 100000
+    max_test_samples = 20000
+    scaling_factor = (max_train_samples // 50)
+    size = "large"
     
     sql_prefs = {
-        'epochs': 2,
+        'epochs': 1,
         'learning_rate': 1e-6,
-        'per_device_train_batch_size': 8,
-        'per_device_eval_batch_size': 8,
+        'per_device_train_batch_size': 2,
+        'per_device_eval_batch_size': 2,
         'weight_decay': 0.01,
+        'strategy': "steps",
+        'gradient_accumulation_steps': 4,
     }
 
     health_prefs = {
@@ -87,41 +89,42 @@ if __name__ == '__main__':
         'per_device_train_batch_size': 1,
         'per_device_eval_batch_size': 1,
         'weight_decay': 0.01,
+        'strategy': "steps",
+        'gradient_accumulation_steps': 1,
     }
-    if SAVE_MODEL:
-        print("WARNING: SAVE_MODEL is set to True. This will save the model.")
-        confirm = input("Do you want to continue? (y/n): ")
-        if confirm.lower() != "y":
-            sys.exit(0)
+
     if arg == "none":
         train_model_pipeline(
-            model_size="base", dataset_source="huggingface",
+            model_size=size, dataset_source="huggingface",
             dataset_identifier="philikai/200k-Text2SQL",
-            model_save_name="flan-t5-base-sql",
+            model_save_name=f"flan-t5-{size}-test",
             save_model=False, prefs=sql_prefs,
             max_train_samples=(max_train_samples // scaling_factor),
             max_test_samples=(max_test_samples // scaling_factor),
-            load_pretrained_model=None)
+            load_pretrained_model=None,
+            push_to_hub=False)
         sys.exit(0)
 
     elif arg == "train":
         # First step: Train on SQL data
         train_model_pipeline(
-            model_size="base", dataset_source="huggingface",
+            model_size=size, dataset_source="huggingface",
             dataset_identifier="philikai/200k-Text2SQL",
-            model_save_name="flan-t5-base-sql",
-            save_model=SAVE_MODEL, prefs=sql_prefs,
+            model_save_name=f"flan-t5-{size}-sql",
+            save_model=True, prefs=sql_prefs,
             max_train_samples=max_train_samples,
             max_test_samples=max_test_samples,
-            load_pretrained_model=None)
+            load_pretrained_model=None,
+            push_to_hub=True)
 
         # Second step: Load the SQL-trained model and train on health data
         train_model_pipeline(
-            model_size="base", dataset_source="local",
+            model_size=size, dataset_source="local",
             dataset_identifier="../input/question_answer.json",
             model_save_name="flan-t5-health-finetuned",
-            save_model=SAVE_MODEL, prefs=health_prefs,
-            load_pretrained_model="flan-t5-base-sql")
+            save_model=False, prefs=health_prefs,
+            load_pretrained_model=f"flan-t5-{size}-sql",
+            push_to_hub=False)
     # Use the model to generate paraphrases
     elif arg == "paraphrase":
         extend_training_data(
