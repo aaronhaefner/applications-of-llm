@@ -1,27 +1,34 @@
-SHELL=bash
-
-all: requirements.txt
-
 # Variables
 VENV_DIR = venv
 REQUIREMENTS = requirements.txt
 PACKAGES = torch torchvision torchaudio transformers datasets ipython SentencePiece accelerate dotenv nltk
 PYTHON = python3
+APP_SCRIPT = app.py
 
-# Recipes
-$(REQUIREMENTS):
-	$(MAKE) setup
-
-.PHONY: setup clean
+all: $(REQUIREMENTS)
 
 # Create the virtual environment and install the required packages
-setup:
+$(REQUIREMENTS):
 	$(PYTHON) -m venv $(VENV_DIR)
-	source $(VENV_DIR)/bin/activate &&
-	pip install --upgrade pip
-	pip install $(PACKAGES)
+	. $(VENV_DIR)/bin/activate && \
+	pip install --upgrade pip && \
+	pip install $(PACKAGES) && \
 	pip freeze > $(REQUIREMENTS)
 
-# Reset venv
+# Run app.py with different input arguments
+.PHONY: run_none run_train run_paraphrase clean
+
+run_none:
+	. $(VENV_DIR)/bin/activate && \
+	$(PYTHON) -m $(APP_SCRIPT) none
+
+run_train:
+	. $(VENV_DIR)/bin/activate && \
+	$(PYTHON) -m $(APP_SCRIPT) train
+
+run_paraphrase:
+	. $(VENV_DIR)/bin/activate && \
+	$(PYTHON) -m $(APP_SCRIPT) paraphrase
+
 clean:
 	rm -rf $(VENV_DIR) $(REQUIREMENTS)
