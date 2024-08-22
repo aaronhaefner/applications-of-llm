@@ -3,7 +3,7 @@ import sys
 import json
 from utils.utils import set_device, load_tokenizer_model
 from utils.main import train_model_pipeline
-from utils.generative_utils import paraphrase, extend_training_data
+from utils.generative_utils import extend_training_data
 from dotenv import load_dotenv
 load_dotenv()
 
