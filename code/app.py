@@ -18,16 +18,16 @@ if __name__ == '__main__':
     max_train_samples = 100000
     max_test_samples = 20000
     scaling_factor = (max_train_samples // 50)
-    size = "large"
+    size = "base"
     
     sql_prefs = {
-        'epochs': 1,
+        'epochs': 2,
         'learning_rate': 1e-6,
-        'per_device_train_batch_size': 2,
-        'per_device_eval_batch_size': 2,
+        'per_device_train_batch_size': 8,
+        'per_device_eval_batch_size': 8,
         'weight_decay': 0.01,
         'strategy': "steps",
-        'gradient_accumulation_steps': 4,
+        'gradient_accumulation_steps': 2,
     }
 
     health_prefs = {
