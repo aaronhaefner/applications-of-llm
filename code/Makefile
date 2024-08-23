@@ -34,10 +34,9 @@ run_paraphrase:
 	conda activate $(CONDA_ENV) && \
 	$(PYTHON) $(APP_SCRIPT) paraphrase
 
-# Clean the environment
-clean:
-	rm -rf $(CONDA_ENV) $(REQUIREMENTS)
-
 # Submit a job using SLURM
 submit:
 	sbatch $(SBATCH_FILE)
+
+del_logs:
+	rm -rf slurmlogs/*
