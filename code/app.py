@@ -15,19 +15,19 @@ if __name__ == '__main__':
     arg = sys.argv[1]
 
     # Set training preferences
-    max_train_samples = 100000
-    max_test_samples = 20000
+    max_train_samples = 50000
+    max_test_samples = 10000
     scaling_factor = (max_train_samples // 50)
     size = "base"
     
     sql_prefs = {
-        'epochs': 2,
+        'epochs': 1,
         'learning_rate': 1e-6,
         'per_device_train_batch_size': 8,
         'per_device_eval_batch_size': 8,
         'weight_decay': 0.01,
         'strategy': "steps",
-        'gradient_accumulation_steps': 2,
+        'gradient_accumulation_steps': 1,
     }
 
     health_prefs = {

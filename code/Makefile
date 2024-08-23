@@ -1,34 +1,43 @@
+# Load environment variables from .env file
+include .env
+export
+
 # Variables
-VENV_DIR = venv
 REQUIREMENTS = ../requirements.txt
 PACKAGES = torch torchvision torchaudio transformers datasets ipython SentencePiece accelerate dotenv nltk
 PYTHON = python3
 APP_SCRIPT = app.py
+SBATCH_FILE = submit_job.sbatch
 
+# Default target
 all: $(REQUIREMENTS)
 
-# Create the virtual environment and install the required packages
+# Install the required packages in the conda environment
 $(REQUIREMENTS):
-	$(PYTHON) -m venv $(VENV_DIR)
-	. $(VENV_DIR)/bin/activate && \
+	conda activate $(CONDA_ENV) && \
 	pip install --upgrade pip && \
 	pip install $(PACKAGES) && \
 	pip freeze > $(REQUIREMENTS)
 
-# Run app.py with different input arguments
-.PHONY: run_none run_train run_paraphrase clean
+# Run app.py with different input arguments locally
+.PHONY: run_none run_train run_paraphrase clean submit
 
 run_none:
-	. $(VENV_DIR)/bin/activate && \
-	$(PYTHON) -m $(APP_SCRIPT) none
+	conda activate $(CONDA_ENV) && \
+	$(PYTHON) $(APP_SCRIPT) none
 
 run_train:
-	. $(VENV_DIR)/bin/activate && \
-	$(PYTHON) -m $(APP_SCRIPT) train
+	conda activate $(CONDA_ENV) && \
+	$(PYTHON) $(APP_SCRIPT) train
 
 run_paraphrase:
-	. $(VENV_DIR)/bin/activate && \
-	$(PYTHON) -m $(APP_SCRIPT) paraphrase
+	conda activate $(CONDA_ENV) && \
+	$(PYTHON) $(APP_SCRIPT) paraphrase
 
+# Clean the environment
 clean:
-	rm -rf $(VENV_DIR) $(REQUIREMENTS)
+	rm -rf $(CONDA_ENV) $(REQUIREMENTS)
+
+# Submit a job using SLURM
+submit:
+	sbatch $(SBATCH_FILE)
