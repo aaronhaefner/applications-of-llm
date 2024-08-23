@@ -11,3 +11,6 @@ code/results/*
 input/paraphrase*
 code/flan*
 code/log*
+*.err
+*.out
+.cache/
