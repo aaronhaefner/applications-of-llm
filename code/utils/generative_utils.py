@@ -16,7 +16,7 @@ def generate_text(prompt: str,
                   tokenizer,
                   device: torch.device,
                   num: int = 1,
-                  max_length: int = 100) -> list:
+                  max_length: int = 50) -> list:
     """
     Generate text based on the given prompt.
 
@@ -25,8 +25,8 @@ def generate_text(prompt: str,
         model: The model to use.
         tokenizer: The tokenizer associated with the model.
         device: The device on which to perform the generation.
-        num (int): Number of generated sequences. Default is 1.
-        max_length (int): Max length of the generated sequences. (Default 100)
+        num (int): Number of generated sequences.
+        max_length (int): Max length of the generated sequences.
 
     Returns:
         list: A list of generated texts.
@@ -79,55 +79,6 @@ def generate_sql_query(question: str,
         f"Write a SQL query to:\n{question}"
     )
     return generate_text(prompt, model, tokenizer, device)[0]
-
-
-def generate_sql_query(question: str,
-                       model,
-                       tokenizer,
-                       device: torch.device) -> str:
-    """
-    Generate a SQL query given a question.
-
-    Args:
-        question (str): The question to generate a SQL query for.
-        model: The model to use.
-        tokenizer: The tokenizer associated with the model.
-        device: The device on which to perform the generation.
-
-    Returns:
-        str: The generated SQL query.
-    """
-    prompt = f"Given the question: {question}\n \
-        Generate the corresponding SQL query that answers the question."
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
-    
-    # Generate the output
-    outputs = model.generate(**inputs,
-                             max_length=100,
-                             num_return_sequences=1,
-                             do_sample=True)
-    
-    # Decode the output to get the generated SQL query
-    generated_sql = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    return generated_sql
-
-
-def generate_multiple_sql_queries(model, questions: list) -> list:
-    """
-    Generate SQL queries for multiple questions.
-
-    Args:
-        model: The model to use.
-        questions (list): A list of questions to generate SQL queries for.
-
-    Returns:
-        list: A list of generated SQL queries.
-    """
-    sql_queries = []
-    for question in questions:
-        sql_queries.append(generate_sql_query(question, model))
-    return sql_queries
 
 
 def paraphrase(model, tokenizer, device,
