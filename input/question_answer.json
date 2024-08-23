@@ -1,316 +1,316 @@
 [
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of rows in the nppes table.",
+        "question": "Write a SQL query to count the total number of rows in the nppes table.",
         "answer": "SELECT COUNT(*) FROM nppes;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to sum the total number of NPIs in the nppes table.",
+        "question": "Write a SQL query to sum the total number of NPIs in the nppes table.",
         "answer": "SELECT SUM(npi) FROM nppes;"  
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of unique NPIs in the nppes table.",
+        "question": "Write a SQL query to count the total number of unique NPIs in the nppes table.",
         "answer": "SELECT COUNT(DISTINCT npi) FROM nppes;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to determine the total number of NPIs in the nppes table that are not null.",
+        "question": "Write a SQL query to determine the total number of NPIs in the nppes table that are not null.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE npi IS NOT NULL;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of healthcare probiders in the nppes table that are females according to the pgender variable.",
+        "question": "Write a SQL query to count the total number of healthcare probiders in the nppes table that are females according to the pgender variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pgender = 'F';"
 
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of healthcare probiders in the nppes table that are males according to the pgender variable.",
+        "question": "Write a SQL query to count the total number of healthcare probiders in the nppes table that are males according to the pgender variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pgender = 'M';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of healthcare probiders in the nppes table that are not females or males according to the pgender variable.",
+        "question": "Write a SQL query to count the total number of healthcare probiders in the nppes table that are not females or males according to the pgender variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pgender != 'F' AND pgender != 'M';"
     },
-    {   "instruction_system_prompt":"Write a SQL query to count the total number of rows in the taxonomy table",
+    {   "question":"Write a SQL query to count the total number of rows in the taxonomy table",
         "answer":"SELECT COUNT(*) FROM taxonomy;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of unique rows in the taxonomy table.",
+        "question": "Write a SQL query to count the total number of unique rows in the taxonomy table.",
         "answer": "SELECT COUNT(DISTINCT ptaxcode) FROM nppes;"
     },
-    {   "instruction_system_prompt":"Write a SQL query to count the total number of rows in the medicare table",
+    {   "question":"Write a SQL query to count the total number of rows in the medicare table",
         "answer":"SELECT COUNT(*) FROM medicare;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of unique rows in the medicare table.",
+        "question": "Write a SQL query to count the total number of unique rows in the medicare table.",
         "answer": "SELECT COUNT(DISTINCT npi) FROM medicare;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of NPIS that are coded as being medicare provdiers (mdcr_provider) in the medicare table.",
+        "question": "Write a SQL query to count the total number of NPIS that are coded as being medicare provdiers (mdcr_provider) in the medicare table.",
         "answer": "SELECT COUNT(npi) FROM medicare WHERE mdcr_provider = 1;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of patients seeing medicare providers in the medicare table.",
+        "question": "Write a SQL query to count the total number of patients seeing medicare providers in the medicare table.",
         "answer": "SELECT SUM(total_patients) FROM medicare WHERE mdcr_provider = 1;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of patients seeing all providers in the medicare table.",
+        "question": "Write a SQL query to count the total number of patients seeing all providers in the medicare table.",
         "answer": "SELECT SUM)total_patients) FROM medicare WHERE mdcr_provider = 1;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count how many npi healthcare providers have more than 100 Medicare patients?",
+        "question": "Write a SQL query to count how many npi healthcare providers have more than 100 Medicare patients?",
         "answer": "SELECT COUNT(npi) FROM medicare WHERE total_patients > 100;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to list all the npis in the nppes table that were deactivated according to a non-missing deactivation date (npideactdate).",
+        "question": "Write a SQL query to list all the npis in the nppes table that were deactivated according to a non-missing deactivation date (npideactdate).",
         "answer": "SELECT npi FROM nppes WHERE npideactdate IS NOT NULL;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of npis in the nppes table that were deactivated and reactivated according to a non-missing deactivation date (npideactdate) and reactivation date (npireactdate).",
+        "question": "Write a SQL query to count the number of npis in the nppes table that were deactivated and reactivated according to a non-missing deactivation date (npideactdate) and reactivation date (npireactdate).",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE npideactdate IS NOT NULL AND npireactdate IS NOT NULL;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of npis in the nppes table that were deactivated due to a reason of fraud.",
+        "question": "Write a SQL query to count the number of npis in the nppes table that were deactivated due to a reason of fraud.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE npideactreason = 'FR';"
     },
-    {   "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a MD (or M.D.) credential using the pcredential variable.",
+    {   "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a MD (or M.D.) credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'MD' OR pcredential = 'M.D.';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DO (or D.O.) credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DO (or D.O.) credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'DO' OR pcredential = 'D.O.';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DDS credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DDS credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'DDS';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DMD credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DMD credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'DMD';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DPM credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DPM credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'DPM';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DC credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a DC credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'DC';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a OD credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a OD credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'OD';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a PA credential using the pcredential variable.",
+        "question": "Write a SQL query to count the total number of npis in the nppes table that are labeled as having a PA credential using the pcredential variable.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE pcredential = 'PA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to join the nppes and taxonomy tables and count how many NPIs are coded as being a physician using the physician indicator variable",
+        "question": "Write a SQL query to join the nppes and taxonomy tables and count how many NPIs are coded as being a physician using the physician indicator variable",
         "answer": "SELECT COUNT(*) FROM nppes JOIN taxonomy ON nppes.npi = taxonomy.npi WHERE physician = 1;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the total number of patients across all healthcare providers in the nppes table?",
+        "question": "Write a SQL query to count the total number of patients across all healthcare providers in the nppes table?",
         "answer": "SELECT SUM(patients_total) FROM nppes;"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Alabama (AL) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Alabama (AL) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'AL';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Alaska (AK) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Alaska (AK) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'AK';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Arizona (AZ) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Arizona (AZ) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'AZ';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Arkansas (AR) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Arkansas (AR) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'AR';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of California (CA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of California (CA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'CA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Colorado (CO) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Colorado (CO) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'CO';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Connecticut (CT) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Connecticut (CT) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'CT';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Delaware (DE) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Delaware (DE) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'DE';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the District of Columbia (DC) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the District of Columbia (DC) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'DC';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Florida (FL) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Florida (FL) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'FL';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Georgia (GA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Georgia (GA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'GA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Hawaii (HI) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Hawaii (HI) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'HI';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Idaho (ID) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Idaho (ID) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'ID';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Illinois (IL) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Illinois (IL) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'IL';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Indiana (IN) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Indiana (IN) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'IN';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Iowa (IA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Iowa (IA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'IA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Kansas (KS) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Kansas (KS) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'KS';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Kentucky (KY) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Kentucky (KY) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'KY';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Louisiana (LA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Louisiana (LA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'LA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Maine (ME) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Maine (ME) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'ME';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Maryland (MD) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Maryland (MD) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MD';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Massachusetts (MA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Massachusetts (MA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Michigan (MI) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Michigan (MI) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MI';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Minnesota (MN) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Minnesota (MN) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MN';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Mississippi (MS) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Mississippi (MS) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MS';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Missouri (MO) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Missouri (MO) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MO';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Montana (MT) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Montana (MT) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'MT';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Nebraska (NE) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Nebraska (NE) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NE';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Nevada (NV) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Nevada (NV) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NV';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of New Hampshire (NH) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of New Hampshire (NH) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NH';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of New Jersey (NJ) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of New Jersey (NJ) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NJ';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of New Mexico (NM) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of New Mexico (NM) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NM';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of New York (NY) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of New York (NY) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NY';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of North Carolina (NC) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of North Carolina (NC) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'NC';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of North Dakota (ND) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of North Dakota (ND) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'ND';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Ohio (OH) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Ohio (OH) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'OH';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Oklahoma (OK) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Oklahoma (OK) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'OK';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Oregon (OR) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Oregon (OR) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'OR';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Pennsylvania (PA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Pennsylvania (PA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'PA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Rhode Island (RI) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Rhode Island (RI) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'RI';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of South Carolina (SC) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of South Carolina (SC) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'SC';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of South Dakota (SD) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of South Dakota (SD) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'SD';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Tennessee (TN) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Tennessee (TN) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'TN';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Texas (TX) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Texas (TX) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'TX';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Utah (UT) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Utah (UT) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'UT';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Vermont (VT) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Vermont (VT) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'VT';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Virginia (VA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Virginia (VA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'VA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Washington (WA) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Washington (WA) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'WA';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of West Virginia (WV) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of West Virginia (WV) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'WV';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Wisconsin (WI) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Wisconsin (WI) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'WI';"
     },
     {
-        "instruction_system_prompt": "Write a SQL query to count the number of NPIs in the state of Wyoming (WY) in the nppes table.",
+        "question": "Write a SQL query to count the number of NPIs in the state of Wyoming (WY) in the nppes table.",
         "answer": "SELECT COUNT(npi) FROM nppes WHERE plocstatename = 'WY';"
     }
 ]

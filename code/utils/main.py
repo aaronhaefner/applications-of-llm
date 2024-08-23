@@ -102,8 +102,7 @@ def train_model(tokenizer, model, device: torch.device,
         )
 
 
-def train_model_pipeline(model_size: str,
-                         dataset_source: str,
+def train_model_pipeline(dataset_source: str,
                          dataset_identifier: str,
                          model_save_name: str,
                          save_model: bool,
@@ -113,10 +112,9 @@ def train_model_pipeline(model_size: str,
                          load_pretrained_model: str = None,
                          push_to_hub: bool = False) -> None:
     """
-    Generalized function to train or further train a T5 model on a given dataset.
+    Generalized function to train or further train a T5 model.
 
     Args:
-        model_size (str): Size of the T5 model (e.g., "base").
         dataset_source (str): Source of the dataset ('huggingface' or 'local').
         dataset_identifier (str): The dataset name or local path.
         model_save_name (str): Name to save the trained model.
@@ -124,16 +122,15 @@ def train_model_pipeline(model_size: str,
         prefs (dict): Training preferences such as epochs, learning rate, etc.
         max_train_samples (int, optional): Maximum number of training samples.
         max_test_samples (int, optional): Maximum number of testing samples.
-        load_pretrained_model (str, optional): Path to a pre-trained model to load.
+        load_pretrained_model (str, optional): Path to a pre-trained model.
         push_to_hub (bool): Whether to push the model to the Hugging Face Hub.
 
     Returns:
         None
     """
     device = set_device()
-    model_name = (
-        f"google/flan-t5-{model_size}" 
-        if not load_pretrained_model else load_pretrained_model)
+    model_name = (f"google/flan-t5-base" 
+                  if not load_pretrained_model else load_pretrained_model)
 
     tokenizer, model = load_tokenizer_model(model_name, device)
     train_dataset, test_dataset = load_and_split_dataset(

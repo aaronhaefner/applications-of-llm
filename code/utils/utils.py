@@ -66,8 +66,7 @@ def load_and_split_dataset(source: str,
                            dataset_identifier: str,
                            seed: int = 42,
                            max_train_samples: int = None,
-                           max_test_samples: int = None,
-                           test_size: float = 0.2) -> tuple:
+                           max_test_samples: int = None) -> tuple:
     """
     Load a dataset from a specified source (Hugging Face or local JSON file) 
     and split into train and test sets.
@@ -87,22 +86,22 @@ def load_and_split_dataset(source: str,
     if source == 'huggingface':
         dataset = load_dataset(
             dataset_identifier,
-            split="train").train_test_split(test_size=test_size, seed=seed)
+            split="train").train_test_split(seed=seed)
 
     elif source == 'local':
         with open(dataset_identifier, 'r') as f:
             data = json.load(f)
-        dataset = Dataset.from_list(data).train_test_split(
-            test_size=test_size, seed=seed)
+        dataset = Dataset.from_list(data).train_test_split(seed=seed)
 
     else:
         raise ValueError("Source must be either 'huggingface' or 'local'")
 
-    train_dataset = dataset["train"].shuffle(seed=seed)
+    train_dataset = dataset["train"]
+    test_dataset = dataset["test"]
+    
     if max_train_samples:
         train_dataset = train_dataset.select(range(max_train_samples))
 
-    test_dataset = dataset["test"].shuffle(seed=seed)
     if max_test_samples:
         test_dataset = test_dataset.select(range(max_test_samples))
 
@@ -120,8 +119,11 @@ def preprocess_function(examples_to_encode: dict, tokenizer) -> dict:
     Returns:
         dict: The encoded input and target columns.
     """
-    inputs = examples_to_encode["instruction_system_prompt"]  # input column
-    targets = examples_to_encode["answer"]  # target column
+    inputs = examples_to_encode["question"]  # input column
+    try:
+        targets = examples_to_encode["query"]  # target column
+    except KeyError:
+        targets = examples_to_encode["answer"]  # target column
 
     inputs_encoded = tokenizer(inputs, max_length=512, truncation=True, 
                                    padding="max_length", return_tensors="pt")
