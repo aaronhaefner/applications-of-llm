@@ -85,12 +85,8 @@ def train_model(tokenizer, model, device: torch.device,
     )
 
     trainer.train()
+    final_log = trainer.state.log_history[-1]
 
-    # Extract the final loss from the training log history
-    final_loss = None
-    if trainer.state.log_history:
-        final_log = trainer.state.log_history[-1]
-        final_loss = final_log['train_loss']
 
     if push_to_hub:
         trainer.push_to_hub(model_save_name)
@@ -109,7 +105,7 @@ def train_model(tokenizer, model, device: torch.device,
             f"completed, model not saved"
         )
 
-    return final_loss
+    return final_log
 
 
 def train_model_pipeline(dataset_source: str,
@@ -162,16 +158,19 @@ def train_model_pipeline(dataset_source: str,
         experiment_name = f"{model_save_name}_{varying_param}_{value}"
         print(f"Running experiment with {varying_param}={value} and other parameters constant.")
 
-        final_loss = train_model(
+        final_log = train_model(
             tokenizer, model, device, param_set,
             tokenized_train_dataset, tokenized_test_dataset,
             experiment_name, save_model=save_model, push_to_hub=push_to_hub
         )
+        train_runtime = final_log['train_runtime']
+        final_loss = final_log['train_loss']
 
         results.append({
             'experiment_name': experiment_name,
             'changed_param': varying_param,
             'param_value': value,
+            'train_runtime': train_runtime,
             'final_loss': final_loss
         })
 
