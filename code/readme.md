@@ -15,4 +15,3 @@
 `app.py`: applications script for training models for different tasks
 
 `readme.md`: this file
-

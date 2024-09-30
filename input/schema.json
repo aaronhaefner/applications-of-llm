@@ -1,42 +1,42 @@
 {
-    "tables": {
-        "nppes": {
-            "columns": {
-                "npi": "TEXT",
-                "entity": "TEXT",
-                "replacement_npi": "TEXT",
-                "ein": "TEXT",
-                "porgname": "TEXT",
-                "pcredential": "TEXT",
-                "plocstatename": "TEXT",
-                "ploczip": "TEXT",
-                "penumdate": "TEXT",
-                "lastupdate": "TEXT",
-                "npideactreason": "TEXT",
-                "npideactdate": "TEXT",
-                "npireactdate": "TEXT",
-                "pgender": "TEXT",
-                "ptaxcode": "TEXT"
-            },
-            "primary_key": "npi"
-        },
-        "taxonomy": {
-            "columns": {
-                "ptaxcode": "TEXT",
-                "physician": "INTEGER",
-                "student": "INTEGER",
-                "np_type": "TEXT",
-                "np": "INTEGER",
-                "Type": "TEXT"
-            },
-            "primary_key": "ptaxcode"
-        },
-        "medicare": {
-            "columns": {
-                "npi": "TEXT",
-                "mdcr_provider": "INTEGER"
-            },
-            "primary_key": "npi"
-        }
+  "tables": {
+    "medicare": {
+      "columns": {
+        "mdcr_provider": "INTEGER",
+        "npi": "TEXT"
+      },
+      "primary_key": "npi"
+    },
+    "nppes": {
+      "columns": {
+        "ein": "TEXT",
+        "entity": "TEXT",
+        "lastupdate": "TEXT",
+        "npi": "TEXT",
+        "npideactdate": "TEXT",
+        "npideactreason": "TEXT",
+        "npireactdate": "TEXT",
+        "pcredential": "TEXT",
+        "penumdate": "TEXT",
+        "pgender": "TEXT",
+        "plocstatename": "TEXT",
+        "ploczip": "TEXT",
+        "porgname": "TEXT",
+        "ptaxcode": "TEXT",
+        "replacement_npi": "TEXT"
+      },
+      "primary_key": "npi"
+    },
+    "taxonomy": {
+      "columns": {
+        "Type": "TEXT",
+        "np": "INTEGER",
+        "np_type": "TEXT",
+        "physician": "INTEGER",
+        "ptaxcode": "TEXT",
+        "student": "INTEGER"
+      },
+      "primary_key": "ptaxcode"
     }
+  }
 }

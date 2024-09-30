@@ -1,258 +1,258 @@
 [
-    {
-        "question": "How many rows are present in the nppes table?",
-        "answer": "SELECT COUNT(*) FROM nppes;"
-    },
-    {
-        "question": "How many medicare-accepting providers are there in the nppes database?",
-        "answer": "SELECT SUM(mdcr_provider) FROM nppes JOIN medicare ON nppes.npi = medicare.npi;"
-    },
-    {
-        "question": "How many physicians are there in the nppes database?",
-        "answer": "SELECT COUNT(physician) FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE physician=1;"
-    },
-    {
-        "question": "What is the total number of patients across all providers?",
-        "answer": "SELECT SUM(patients_total) FROM provider_patients;"
-    },
-    {
-        "question": "What is the total number of Medicare patients across all providers?",
-        "answer": "SELECT SUM(patients_medicare) FROM provider_patients;"
-    },
-    {
-        "question": "How many providers have more than 100 Medicare patients?",
-        "answer": "SELECT COUNT(*) FROM provider_patients WHERE patients_medicare > 100;"
-    },
-    {
-        "question": "How many female providers are listed in the nppes table?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE pgender = 'F';"
-    },
-    {
-        "question": "How many male providers are listed in the nppes table?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE pgender = 'M';"
-    },
-    {
-        "question": "List all the providers who were deactivated and later reactivated.",
-        "answer": "SELECT npi FROM nppes WHERE npideactdate IS NOT NULL AND npireactdate IS NOT NULL;"
-    },
-    {
-        "question": "What is the average percentage of patients aged 75-84 across all providers?",
-        "answer": "SELECT AVG(patients_pct_75_84) FROM provider_patients;"
-    },
-    {
-        "question": "How many providers have a credential listed in the nppes table?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE pcredential IS NOT NULL;"
-    },
-    {
-        "question": "What is the most recent update date across all providers?",
-        "answer": "SELECT MAX(lastupdate) FROM nppes;"
-    },
-    {
-        "question": "How many providers have been deactivated?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE npideactdate IS NOT NULL;"
-    },
-    {
-        "question": "List the NPI numbers of providers who have reactivated their status after deactivation.",
-        "answer": "SELECT npi FROM nppes WHERE npireactdate IS NOT NULL AND npideactdate IS NOT NULL;"
-    },
-    {
-        "question": "How many unique taxonomy codes are present in the taxonomy table?",
-        "answer": "SELECT COUNT(DISTINCT ptaxcode) FROM taxonomy;"
-    },
-    {
-        "question": "What is the total number of entities (e.g., organizations) listed in the nppes table?",
-        "answer": "SELECT COUNT(entity) FROM nppes WHERE entity IS NOT NULL;"
-    },
-    {
-        "question": "How many providers are students?",
-        "answer": "SELECT COUNT(*) FROM taxonomy WHERE student = 1;"
-    },
-    {
-        "question": "How many providers have a gender specified?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE pgender IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of patients aged 85 and above?",
-        "answer": "SELECT SUM(patients_pct_85_plus) FROM provider_patients;"
-    },
-    {
-        "question": "Which providers have an EIN (Employer Identification Number) listed?",
-        "answer": "SELECT npi FROM nppes WHERE ein IS NOT NULL;"
-    },
-    {
-        "question": "List the NPI numbers of providers who have the 'physician' type.",
-        "answer": "SELECT npi FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE physician = 1;"
-    },
-    {
-        "question": "How many providers are classified under the 'np_type' category?",
-        "answer": "SELECT COUNT(*) FROM taxonomy WHERE np_type IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique NPI numbers in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT npi) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'replacement_npi' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE replacement_npi IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'ploczip' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT ploczip) FROM nppes;"
-    },
-    {
-        "question": "How many providers have an 'enumdate' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE penumdate IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'plocstatename' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT plocstatename) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'npideactreason' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE npideactreason IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'porgname' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT porgname) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'pgender' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE pgender IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'ptaxcode' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT ptaxcode) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'lastupdate' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE lastupdate IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'pcredential' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT pcredential) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'npi' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE npi IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'npi' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT npi) FROM nppes;"
-    },
-    {
-        "question": "How many providers have an 'ein' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE ein IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'ein' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT ein) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'plocstatename' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE plocstatename IS NOT NULL;"
-    },
-    {
-        "question": "How many providers have a 'ploczip' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE ploczip IS NOT NULL;"
-    },
-    {
-        "question": "How many providers have a 'penumdate' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE penumdate IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'penumdate' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT penumdate) FROM nppes;"
-    },
-    {
-        "question": "What is the total number of unique 'lastupdate' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT lastupdate) FROM nppes;"
-    },
-    {
-        "question": "What is the total number of unique 'npideactreason' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT npideactreason) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'npideactdate' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE npideactdate IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'npideactdate' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT npideactdate) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'npireactdate' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE npireactdate IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'npireactdate' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT npireactdate) FROM nppes;"
-    },
-    {
-        "question": "What is the total number of unique 'pgender' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT pgender) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'ptaxcode' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE ptaxcode IS NOT NULL;"
-    },
-    {
-        "question": "How many providers have a 'pcredential' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE pcredential IS NOT NULL;"
-    },
-    {
-        "question": "How many providers have an 'entity' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE entity IS NOT NULL;"
-    },
-    {
-        "question": "What is the total number of unique 'entity' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT entity) FROM nppes;"
-    },
-    {
-        "question": "What is the total number of unique 'replacement_npi' values in the nppes table?",
-        "answer": "SELECT COUNT(DISTINCT replacement_npi) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'porgname' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE porgname IS NOT NULL;"
-    },
-    {
-        "question": "What is the average number of patients per provider?",
-        "answer": "SELECT AVG(patients_total) FROM provider_patients;"
-    },
-    {
-        "question": "Which providers have more than 50% of their patients aged 75-84?",
-        "answer": "SELECT npi FROM provider_patients WHERE patients_pct_75_84 > 50;"
-    },
-    {
-        "question": "List the NPI numbers of providers who are categorized as students.",
-        "answer": "SELECT npi FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE student = 1;"
-    },
-    {
-        "question": "What is the most common state of practice for providers in the database?",
-        "answer": "SELECT plocstatename FROM nppes GROUP BY plocstatename ORDER BY COUNT(*) DESC LIMIT 1;"
-    },
-    {
-        "question": "How many providers are categorized under both 'physician' and 'np' types?",
-        "answer": "SELECT COUNT(*) FROM taxonomy WHERE physician = 1 AND np = 1;"
-    },
-    {
-        "question": "What is the earliest enumeration date (penumdate) recorded for any provider?",
-        "answer": "SELECT MIN(penumdate) FROM nppes;"
-    },
-    {
-        "question": "List the provider NPIs that have never been deactivated.",
-        "answer": "SELECT npi FROM nppes WHERE npideactdate IS NULL;"
-    },
-    {
-        "question": "How many providers have the 'entity' field listed as 'Corporation'?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE entity = 'Corporation';"
-    },
-    {
-        "question": "What is the total number of unique practice locations (plocstatename) listed for providers?",
-        "answer": "SELECT COUNT(DISTINCT plocstatename) FROM nppes;"
-    },
-    {
-        "question": "How many providers have a 'replacement_npi' and a 'npireactdate' listed?",
-        "answer": "SELECT COUNT(*) FROM nppes WHERE replacement_npi IS NOT NULL AND npireactdate IS NOT NULL;"
-    }
+  {
+    "answer": "SELECT COUNT(*) FROM nppes;",
+    "question": "How many rows are present in the nppes table?"
+  },
+  {
+    "answer": "SELECT SUM(mdcr_provider) FROM nppes JOIN medicare ON nppes.npi = medicare.npi;",
+    "question": "How many medicare-accepting providers are there in the nppes database?"
+  },
+  {
+    "answer": "SELECT COUNT(physician) FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE physician=1;",
+    "question": "How many physicians are there in the nppes database?"
+  },
+  {
+    "answer": "SELECT SUM(patients_total) FROM provider_patients;",
+    "question": "What is the total number of patients across all providers?"
+  },
+  {
+    "answer": "SELECT SUM(patients_medicare) FROM provider_patients;",
+    "question": "What is the total number of Medicare patients across all providers?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM provider_patients WHERE patients_medicare > 100;",
+    "question": "How many providers have more than 100 Medicare patients?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE pgender = 'F';",
+    "question": "How many female providers are listed in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE pgender = 'M';",
+    "question": "How many male providers are listed in the nppes table?"
+  },
+  {
+    "answer": "SELECT npi FROM nppes WHERE npideactdate IS NOT NULL AND npireactdate IS NOT NULL;",
+    "question": "List all the providers who were deactivated and later reactivated."
+  },
+  {
+    "answer": "SELECT AVG(patients_pct_75_84) FROM provider_patients;",
+    "question": "What is the average percentage of patients aged 75-84 across all providers?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE pcredential IS NOT NULL;",
+    "question": "How many providers have a credential listed in the nppes table?"
+  },
+  {
+    "answer": "SELECT MAX(lastupdate) FROM nppes;",
+    "question": "What is the most recent update date across all providers?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE npideactdate IS NOT NULL;",
+    "question": "How many providers have been deactivated?"
+  },
+  {
+    "answer": "SELECT npi FROM nppes WHERE npireactdate IS NOT NULL AND npideactdate IS NOT NULL;",
+    "question": "List the NPI numbers of providers who have reactivated their status after deactivation."
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT ptaxcode) FROM taxonomy;",
+    "question": "How many unique taxonomy codes are present in the taxonomy table?"
+  },
+  {
+    "answer": "SELECT COUNT(entity) FROM nppes WHERE entity IS NOT NULL;",
+    "question": "What is the total number of entities (e.g., organizations) listed in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM taxonomy WHERE student = 1;",
+    "question": "How many providers are students?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE pgender IS NOT NULL;",
+    "question": "How many providers have a gender specified?"
+  },
+  {
+    "answer": "SELECT SUM(patients_pct_85_plus) FROM provider_patients;",
+    "question": "What is the total number of patients aged 85 and above?"
+  },
+  {
+    "answer": "SELECT npi FROM nppes WHERE ein IS NOT NULL;",
+    "question": "Which providers have an EIN (Employer Identification Number) listed?"
+  },
+  {
+    "answer": "SELECT npi FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE physician = 1;",
+    "question": "List the NPI numbers of providers who have the 'physician' type."
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM taxonomy WHERE np_type IS NOT NULL;",
+    "question": "How many providers are classified under the 'np_type' category?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT npi) FROM nppes;",
+    "question": "What is the total number of unique NPI numbers in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE replacement_npi IS NOT NULL;",
+    "question": "How many providers have a 'replacement_npi' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT ploczip) FROM nppes;",
+    "question": "What is the total number of unique 'ploczip' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE penumdate IS NOT NULL;",
+    "question": "How many providers have an 'enumdate' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT plocstatename) FROM nppes;",
+    "question": "What is the total number of unique 'plocstatename' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE npideactreason IS NOT NULL;",
+    "question": "How many providers have a 'npideactreason' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT porgname) FROM nppes;",
+    "question": "What is the total number of unique 'porgname' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE pgender IS NOT NULL;",
+    "question": "How many providers have a 'pgender' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT ptaxcode) FROM nppes;",
+    "question": "What is the total number of unique 'ptaxcode' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE lastupdate IS NOT NULL;",
+    "question": "How many providers have a 'lastupdate' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT pcredential) FROM nppes;",
+    "question": "What is the total number of unique 'pcredential' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE npi IS NOT NULL;",
+    "question": "How many providers have a 'npi' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT npi) FROM nppes;",
+    "question": "What is the total number of unique 'npi' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE ein IS NOT NULL;",
+    "question": "How many providers have an 'ein' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT ein) FROM nppes;",
+    "question": "What is the total number of unique 'ein' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE plocstatename IS NOT NULL;",
+    "question": "How many providers have a 'plocstatename' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE ploczip IS NOT NULL;",
+    "question": "How many providers have a 'ploczip' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE penumdate IS NOT NULL;",
+    "question": "How many providers have a 'penumdate' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT penumdate) FROM nppes;",
+    "question": "What is the total number of unique 'penumdate' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT lastupdate) FROM nppes;",
+    "question": "What is the total number of unique 'lastupdate' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT npideactreason) FROM nppes;",
+    "question": "What is the total number of unique 'npideactreason' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE npideactdate IS NOT NULL;",
+    "question": "How many providers have a 'npideactdate' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT npideactdate) FROM nppes;",
+    "question": "What is the total number of unique 'npideactdate' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE npireactdate IS NOT NULL;",
+    "question": "How many providers have a 'npireactdate' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT npireactdate) FROM nppes;",
+    "question": "What is the total number of unique 'npireactdate' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT pgender) FROM nppes;",
+    "question": "What is the total number of unique 'pgender' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE ptaxcode IS NOT NULL;",
+    "question": "How many providers have a 'ptaxcode' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE pcredential IS NOT NULL;",
+    "question": "How many providers have a 'pcredential' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE entity IS NOT NULL;",
+    "question": "How many providers have an 'entity' listed?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT entity) FROM nppes;",
+    "question": "What is the total number of unique 'entity' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT replacement_npi) FROM nppes;",
+    "question": "What is the total number of unique 'replacement_npi' values in the nppes table?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE porgname IS NOT NULL;",
+    "question": "How many providers have a 'porgname' listed?"
+  },
+  {
+    "answer": "SELECT AVG(patients_total) FROM provider_patients;",
+    "question": "What is the average number of patients per provider?"
+  },
+  {
+    "answer": "SELECT npi FROM provider_patients WHERE patients_pct_75_84 > 50;",
+    "question": "Which providers have more than 50% of their patients aged 75-84?"
+  },
+  {
+    "answer": "SELECT npi FROM nppes JOIN taxonomy ON nppes.ptaxcode = taxonomy.ptaxcode WHERE student = 1;",
+    "question": "List the NPI numbers of providers who are categorized as students."
+  },
+  {
+    "answer": "SELECT plocstatename FROM nppes GROUP BY plocstatename ORDER BY COUNT(*) DESC LIMIT 1;",
+    "question": "What is the most common state of practice for providers in the database?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM taxonomy WHERE physician = 1 AND np = 1;",
+    "question": "How many providers are categorized under both 'physician' and 'np' types?"
+  },
+  {
+    "answer": "SELECT MIN(penumdate) FROM nppes;",
+    "question": "What is the earliest enumeration date (penumdate) recorded for any provider?"
+  },
+  {
+    "answer": "SELECT npi FROM nppes WHERE npideactdate IS NULL;",
+    "question": "List the provider NPIs that have never been deactivated."
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE entity = 'Corporation';",
+    "question": "How many providers have the 'entity' field listed as 'Corporation'?"
+  },
+  {
+    "answer": "SELECT COUNT(DISTINCT plocstatename) FROM nppes;",
+    "question": "What is the total number of unique practice locations (plocstatename) listed for providers?"
+  },
+  {
+    "answer": "SELECT COUNT(*) FROM nppes WHERE replacement_npi IS NOT NULL AND npireactdate IS NOT NULL;",
+    "question": "How many providers have a 'replacement_npi' and a 'npireactdate' listed?"
+  }
 ]

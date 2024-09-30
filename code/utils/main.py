@@ -1,44 +1,62 @@
-# Main utils to train models flexibly
+"""Main functions for deployment."""
 import logging
 import torch
-from transformers import (TrainingArguments, Trainer)
-from itertools import product
-from utils.utils import (set_device, process_tokenizer,
-                         load_tokenizer_model, load_and_split_dataset)
+from transformers import TrainingArguments, Trainer
+from utils.utils import (
+    set_device,
+    process_tokenizer,
+    load_tokenizer_model,
+    load_and_split_dataset,
+)
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
 def unpack_prefs(prefs: dict) -> dict:
-    """
-    Unpack the preferences dictionary into individual variables.
+    """Unpack the preferences dictionary into individual variables.
 
     Args:
+    ----
         prefs (dict): The preferences dictionary.
 
     Returns: dict
     """
-    epochs = prefs['epochs']
-    learning_rate = prefs['learning_rate']
-    per_device_train_batch_size = prefs['per_device_train_batch_size']
-    per_device_eval_batch_size = prefs['per_device_eval_batch_size']
-    weight_decay = prefs['weight_decay']
-    strategy = prefs['strategy']
-    grad_acc_steps = prefs['gradient_accumulation_steps']
+    epochs = prefs["epochs"]
+    learning_rate = prefs["learning_rate"]
+    per_device_train_batch_size = prefs["per_device_train_batch_size"]
+    per_device_eval_batch_size = prefs["per_device_eval_batch_size"]
+    weight_decay = prefs["weight_decay"]
+    strategy = prefs["strategy"]
+    grad_acc_steps = prefs["gradient_accumulation_steps"]
 
-    return (epochs, learning_rate, per_device_train_batch_size,
-            per_device_eval_batch_size, weight_decay, strategy,
-            grad_acc_steps)
+    return (
+        epochs,
+        learning_rate,
+        per_device_train_batch_size,
+        per_device_eval_batch_size,
+        weight_decay,
+        strategy,
+        grad_acc_steps,
+    )
 
 
-def train_model(tokenizer, model, device: torch.device, 
-                prefs: dict, train_dataset, eval_dataset=None,
-                model_save_name: str=None, save_model: bool=False,
-                push_to_hub: bool=False, fine_tune: bool=False) -> float:
-    """
-    Train or fine-tune the model on the given dataset.
+def train_model(
+    tokenizer,
+    model,
+    device: torch.device,
+    prefs: dict,
+    train_dataset,
+    eval_dataset=None,
+    model_save_name: str = None,
+    save_model: bool = False,
+    push_to_hub: bool = False,
+    fine_tune: bool = False,
+) -> float:
+    """Train or fine-tune the model on the given dataset.
 
     Args:
+    ----
         tokenizer: The tokenizer for the model.
         model: The model to train.
         device (torch.device): The device to train the model on.
@@ -49,17 +67,32 @@ def train_model(tokenizer, model, device: torch.device,
         save_model (bool): Whether to save the model.
         push_to_hub (bool): Whether to push the model to the Hugging Face Hub.
         fine_tune (bool): Whether to fine-tune the model.
-    
+
     Returns:
+    -------
         final_loss (float): The final loss after training.
     """
     # Unpack preferences
-    epochs, learning_rate, per_device_train_batch_size, \
-        per_device_eval_batch_size, weight_decay, strategy, \
-        grad_acc_steps = unpack_prefs(prefs)
+    (
+        epochs,
+        learning_rate,
+        per_device_train_batch_size,
+        per_device_eval_batch_size,
+        weight_decay,
+        strategy,
+        grad_acc_steps,
+    ) = unpack_prefs(prefs)
 
-    output_dir = f"./{model_save_name}_fine_tuning" if fine_tune else f"./{model_save_name}"
-    logging_dir = f"./logs_{model_save_name}_fine_tuning" if fine_tune else f"./logs_{model_save_name}"
+    output_dir = (
+        f"./{model_save_name}_fine_tuning"
+        if fine_tune
+        else f"./{model_save_name}"
+    )
+    logging_dir = (
+        f"./logs_{model_save_name}_fine_tuning"
+        if fine_tune
+        else f"./logs_{model_save_name}"
+    )
 
     training_args = TrainingArguments(
         output_dir=output_dir,
@@ -81,12 +114,11 @@ def train_model(tokenizer, model, device: torch.device,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        tokenizer=tokenizer
+        tokenizer=tokenizer,
     )
 
     trainer.train()
     final_log = trainer.state.log_history[-1]
-
 
     if push_to_hub:
         trainer.push_to_hub(model_save_name)
@@ -108,21 +140,23 @@ def train_model(tokenizer, model, device: torch.device,
     return final_log
 
 
-def train_model_pipeline(dataset_source: str,
-                         dataset_identifier: str,
-                         model_save_name: str,
-                         save_model: bool,
-                         prefs: dict,
-                         varying_param: str,
-                         varying_values: list,
-                         max_train_samples: int = None,
-                         max_test_samples: int = None,
-                         load_pretrained_model: str = None,
-                         push_to_hub: bool = False) -> list:
-    """
-    Train or further train a T5 model, varying one parameter.
+def train_model_pipeline(
+    dataset_source: str,
+    dataset_identifier: str,
+    model_save_name: str,
+    save_model: bool,
+    prefs: dict,
+    varying_param: str,
+    varying_values: list,
+    max_train_samples: int = None,
+    max_test_samples: int = None,
+    load_pretrained_model: str = None,
+    push_to_hub: bool = False,
+) -> list:
+    """Train or further train a T5 model, varying one parameter.
 
     Args:
+    ----
         dataset_source (str): Source of the dataset ('huggingface' or 'local').
         dataset_identifier (str): The dataset name or local path.
         model_save_name (str): Name to save the trained model.
@@ -136,18 +170,27 @@ def train_model_pipeline(dataset_source: str,
         push_to_hub (bool): Whether to push the model to the Hugging Face Hub.
 
     Returns:
+    -------
         results (list): List of dictionaries with parameters and resulting loss.
     """
     device = set_device()
-    model_name = f"google/flan-t5-base" if not load_pretrained_model else load_pretrained_model
+    model_name = (
+        "google/flan-t5-base"
+        if not load_pretrained_model
+        else load_pretrained_model
+    )
 
     tokenizer, model = load_tokenizer_model(model_name, device)
     train_dataset, test_dataset = load_and_split_dataset(
-        source=dataset_source, dataset_identifier=dataset_identifier,
-        max_train_samples=max_train_samples, max_test_samples=max_test_samples)
+        source=dataset_source,
+        dataset_identifier=dataset_identifier,
+        max_train_samples=max_train_samples,
+        max_test_samples=max_test_samples,
+    )
 
     tokenized_train_dataset, tokenized_test_dataset = process_tokenizer(
-        tokenizer, train_dataset, test_dataset)
+        tokenizer, train_dataset, test_dataset
+    )
 
     results = []
 
@@ -156,24 +199,30 @@ def train_model_pipeline(dataset_source: str,
         param_set = prefs.copy()
         param_set[varying_param] = value
         experiment_name = f"{model_save_name}_{varying_param}_{value}"
-        print(f"Running experiment with {varying_param}={value} and other parameters constant.")
+        print(f"Running with {varying_param}={value}, other params constant.")
 
         final_log = train_model(
-            tokenizer, model, device, param_set,
-            tokenized_train_dataset, tokenized_test_dataset,
-            experiment_name, save_model=save_model, push_to_hub=push_to_hub
+            tokenizer,
+            model,
+            device,
+            param_set,
+            tokenized_train_dataset,
+            tokenized_test_dataset,
+            experiment_name,
+            save_model=save_model,
+            push_to_hub=push_to_hub,
         )
-        train_runtime = final_log['train_runtime']
-        final_loss = final_log['train_loss']
+        train_runtime = final_log["train_runtime"]
+        final_loss = final_log["train_loss"]
 
-        results.append({
-            'experiment_name': experiment_name,
-            'changed_param': varying_param,
-            'param_value': value,
-            'train_runtime': train_runtime,
-            'final_loss': final_loss
-        })
+        results.append(
+            {
+                "experiment_name": experiment_name,
+                "changed_param": varying_param,
+                "param_value": value,
+                "train_runtime": train_runtime,
+                "final_loss": final_loss,
+            }
+        )
 
     return results
-
-
