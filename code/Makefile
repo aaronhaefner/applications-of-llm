@@ -9,7 +9,7 @@ REQUIREMENTS := requirements.txt
 CONDA_ENV := torchenv
 PYTHON_VERSION := 3.11
 PYTHON := python
-PACKAGES = torch torchvision torchaudio transformers datasets ipython SentencePiece accelerate python-dotenv nltk
+PACKAGES = torch torchvision torchaudio transformers datasets ipython SentencePiece accelerate python-dotenv nltk pre-commit ruff black
 APP_SCRIPT = app.py
 
 # Install the required packages in the conda environment
