@@ -1,7 +1,11 @@
 """Main functions for deployment."""
 import logging
 import torch
-from transformers import TrainingArguments, Trainer
+from transformers import (
+    Seq2SeqTrainingArguments,
+    Seq2SeqTrainer,
+    DataCollatorForSeq2Seq,
+)
 from utils.utils import (
     set_device,
     process_tokenizer,
@@ -83,6 +87,10 @@ def train_model(
         grad_acc_steps,
     ) = unpack_prefs(prefs)
 
+    data_collator = DataCollatorForSeq2Seq(
+        tokenizer=tokenizer, model="t5-small"
+    )
+
     output_dir = (
         f"./{model_save_name}_fine_tuning"
         if fine_tune
@@ -94,7 +102,7 @@ def train_model(
         else f"./logs_{model_save_name}"
     )
 
-    training_args = TrainingArguments(
+    training_args = Seq2SeqTrainingArguments(
         output_dir=output_dir,
         logging_dir=logging_dir,
         logging_strategy=strategy,
@@ -105,16 +113,19 @@ def train_model(
         per_device_eval_batch_size=per_device_eval_batch_size,
         num_train_epochs=epochs,
         weight_decay=weight_decay,
+        predict_with_generate=True,
+        fp16=True,
         push_to_hub=push_to_hub,
         gradient_accumulation_steps=grad_acc_steps,
     )
 
-    trainer = Trainer(
+    trainer = Seq2SeqTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         tokenizer=tokenizer,
+        data_collato=data_collator,
     )
 
     trainer.train()
@@ -175,7 +186,7 @@ def train_model_pipeline(
     """
     device = set_device()
     model_name = (
-        "google/flan-t5-base"
+        "google/flan-t5-small"
         if not load_pretrained_model
         else load_pretrained_model
     )
